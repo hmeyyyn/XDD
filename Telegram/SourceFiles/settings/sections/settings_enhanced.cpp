@@ -656,6 +656,9 @@ struct DecodeEnhancedSettingsResult {
 		const auto &buttonStyle = descriptor.restartRequired
 			? st::settingsAttentionButton
 			: st::settingsButtonNoIcon;
+		if (!about && descriptor.description) {
+			about = (*descriptor.description)();
+		}
 		const auto button = about
 			? AddButtonWithAbout(
 				content,
