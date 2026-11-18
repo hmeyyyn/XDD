@@ -259,6 +259,17 @@ void BotUseSettings::setupContent() {
 		st::defaultBoxDividerLabelPadding,
 		st::defaultDividerLabel,
 		RectPart::Bottom);
+
+	AddSkip(page);
+	AddSubsectionTitle(page, tr::lng_bot_use_guide_title());
+	page->add(
+		object_ptr<Ui::FlatLabel>(
+			page,
+			tr::lng_bot_use_guide_text(),
+			st::defaultFlatLabel),
+		st::defaultBoxDividerLabelPadding);
+	AddSkip(page);
+
 	const auto api = AddGroup(page, tr::lng_bot_use_api_settings(), false);
 	const auto configure = AddButtonWithIcon(
 		api,
