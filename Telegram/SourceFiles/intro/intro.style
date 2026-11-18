@@ -78,9 +78,9 @@ introCoverDuration: 200;
 
 introNextButton: RoundButton(defaultActiveButton) {
 	width: 300px;
-	height: 42px;
-	radius: 6px;
-	textTop: 11px;
+	height: 48px;
+	radius: 24px;
+	textTop: 14px;
 	style: TextStyle(semiboldTextStyle) {
 		font: font(boxFontSize semibold);
 	}
@@ -171,7 +171,7 @@ introQrTop: -18px;
 introQrPixel: 50px; // large enough
 introQrMaxSize: 180px;
 introQrBackgroundSkip: 12px;
-introQrBackgroundRadius: 8px;
+introQrBackgroundRadius: 16px;
 introQrLabelsWidth: 292px;
 introQrTitleWidth: 320px;
 introQrTitle: FlatLabel(defaultFlatLabel) {
