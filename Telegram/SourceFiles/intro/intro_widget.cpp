@@ -48,6 +48,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_intro.h"
 #include "base/qt/qt_common_adapters.h"
 
+#include <QtGui/QLinearGradient>
+
 namespace Intro {
 namespace {
 
@@ -806,7 +808,11 @@ void Widget::paintEvent(QPaintEvent *e) {
 		_showAnimation->paintContents(p);
 		return;
 	}
-	p.fillRect(e->rect(), st::windowBg);
+	// Material 3 surface: a soft tonal gradient instead of a flat fill.
+	auto surface = QLinearGradient(0, 0, 0, height());
+	surface.setColorAt(0., st::windowBg->c);
+	surface.setColorAt(1., st::windowBgOver->c);
+	p.fillRect(e->rect(), surface);
 }
 
 void Widget::resizeEvent(QResizeEvent *e) {

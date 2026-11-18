@@ -481,7 +481,7 @@ dialogsSearchInDown: icon {{ "intro_country_dropdown", windowBoldFg }};
 dialogsSearchInDownSkip: 4px;
 dialogsSearchInMenu: PopupMenu(defaultPopupMenu) {
 	scrollPadding: margins(0px, 0px, 0px, 0px);
-	radius: 8px;
+	radius: 12px;
 	menu: menuWithIcons;
 }
 dialogsSearchInCheck: icon {{ "player/player_check", mediaPlayerActiveFg }};

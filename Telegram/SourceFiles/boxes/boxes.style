@@ -545,9 +545,9 @@ birthdayLabel: FlatLabel(infoLabel) {
 birthdayTodayIcon: icon {{ "menu/gift_premium", windowActiveTextFg }};
 
 collectibleCopy: RoundButton(defaultLightButton) {
-	height: 36px;
-	textTop: 9px;
-	radius: 6px;
+	height: 40px;
+	textTop: 11px;
+	radius: 20px;
 }
 collectibleBox: Box(defaultBox) {
 	buttonPadding: margins(24px, 12px, 24px, 12px);
