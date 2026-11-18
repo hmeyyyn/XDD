@@ -107,8 +107,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/cached_webview_availability.h"
 #include "test/test_agent.h"
 
+#include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
+#include <QtCore/QStringList>
 #include <QtCore/QMimeDatabase>
+#include <QtGui/QFontDatabase>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QScreen>
 
@@ -149,6 +152,38 @@ base::options::toggle OptionSkipUrlSchemeRegister({
 	.name = "Skip URL scheme register",
 	.description = "Don't re-register tg:// URL scheme on autoupdate.",
 });
+
+// Material You typeface: the design this client follows is built on Google Sans.
+// The font is proprietary, so it is never bundled - it is picked up from the
+// system when the user has it installed, and any font dropped into the
+// ":fonts" resource folder (Telegram/Resources/fonts + qrc entry) is registered
+// as well, so a bundled family can be added later without code changes.
+void RegisterBundledFonts() {
+	const auto folder = QDir(QStringLiteral(":/fonts"));
+	const auto names = folder.entryList(QDir::Files);
+	for (const auto &name : names) {
+		QFontDatabase::addApplicationFont(folder.filePath(name));
+	}
+}
+
+[[nodiscard]] QString PreferredFontFamily(const QString &chosen) {
+	if (!chosen.isEmpty()) {
+		return chosen;
+	}
+	static const auto kPreferred = QStringList{
+		QStringLiteral("Google Sans Text"),
+		QStringLiteral("Google Sans"),
+		QStringLiteral("Google Sans Display"),
+		QStringLiteral("Product Sans"),
+	};
+	const auto families = QFontDatabase::families();
+	for (const auto &family : kPreferred) {
+		if (families.contains(family)) {
+			return family;
+		}
+	}
+	return QString();
+}
 
 } // namespace
 
@@ -319,7 +354,8 @@ void Application::run() {
 
 	startLocalStorage();
 
-	style::SetCustomFont(settings().customFontFamily());
+	RegisterBundledFonts();
+	style::SetCustomFont(PreferredFontFamily(settings().customFontFamily()));
 	style::internal::StartFonts();
 
 	Test::ApplyStartupOverrides();
