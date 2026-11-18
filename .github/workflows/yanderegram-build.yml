@@ -38,14 +38,14 @@ jobs:
           echo "libs=win-libs-${HASH}" >> "$GITHUB_OUTPUT"
           echo "qt=win-qt-${HASH}" >> "$GITHUB_OUTPUT"
       - name: Restore ThirdParty cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: TBuild/ThirdParty
           key: ${{ steps.keys.outputs.third }}
           restore-keys: |
             win-thirdparty-
       - name: Restore libraries cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             TBuild/Libraries/win64/*
@@ -55,7 +55,7 @@ jobs:
             !TBuild/Libraries/win64/cache_keys/[qQ]t[_-]*
           key: ${{ steps.keys.outputs.libs }}
       - name: Restore Qt cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: |
             TBuild/Libraries/win64/[qQ]t[_-]*
@@ -83,13 +83,13 @@ jobs:
             ')' -delete
       - name: Save ThirdParty cache
         if: steps.third.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: TBuild/ThirdParty
           key: ${{ steps.keys.outputs.third }}
       - name: Save libraries cache
         if: steps.libs.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: |
             TBuild/Libraries/win64/*
@@ -100,7 +100,7 @@ jobs:
           key: ${{ steps.keys.outputs.libs }}
       - name: Save Qt cache
         if: steps.qt.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: |
             TBuild/Libraries/win64/[qQ]t[_-]*
