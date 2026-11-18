@@ -306,6 +306,17 @@ void BotUseSettings::setupContent() {
 		BotUse::Settings::Option::AllowReplyAndRepeatBots,
 		tr::lng_bot_use_allow_reply_and_repeat_bots_about());
 
+	AddDivider(page);
+	AddSkip(page);
+	AddSubsectionTitle(page, tr::lng_bot_use_what_title());
+	page->add(
+		object_ptr<Ui::FlatLabel>(
+			page,
+			tr::lng_bot_use_what_text(),
+			st::defaultFlatLabel),
+		st::defaultBoxDividerLabelPadding);
+	AddSkip(page);
+
 	refreshBots();
 	controller()->session().domain().botUse().changes(
 	) | rpl::on_next([=] { refreshBots(); }, lifetime());
