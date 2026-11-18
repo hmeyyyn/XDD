@@ -139,15 +139,17 @@ cmake --build out --config Debug --target Telegram
 
 That's it. The `out/` directory is already configured. The executable will be at `out/Debug/Telegram.exe`.
 
-**On Linux, build with:**
+**On Windows, build with:**
 
-```bash
-source .env && bash ./scripts/build_debug.sh
+```cmd
+call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+cd Telegram\build\prepare && win.bat qt6 skip-debug skip-dump-syms silent
+cd ..\..\Telegram && configure.bat -G "Ninja Multi-Config" -D TDESKTOP_API_ID=%API_ID% -D TDESKTOP_API_HASH=%API_HASH%
 ```
 
-The build requires `API_ID` and `API_HASH`. Before invoking the script, attempt
-to inject them with `source .env`; export them directly if `.env` is
-unavailable. Do not run this build script in a sandboxed environment.
+The build requires `API_ID` and `API_HASH` in the environment. The Linux build
+scripts (Docker environment, AppImage CI, snap, Nix, `scripts/build_debug.sh`)
+were removed from this checkout: only the Windows build is supported.
 
 **Important:** When running cmake from a shell that doesn't support `cd`, use quoted absolute paths:
 ```bash
@@ -201,11 +203,11 @@ entry to make a clean succeed.
   as undefined-symbol link errors rather than as a configure error — and newly
   added `.style` modules leave the generated `style_*.h` includes stale.
 
-### Linux
-- Build dependencies in `../Libraries`
-- Set `QT` environment variable if needed
-- Use `source .env && bash ./scripts/build_debug.sh` for builds; run it
-  outside the sandbox.
+### Windows
+- Build dependencies in `../Libraries`, populated by `prepare\win.bat`
+- Configure with `configure.bat -G "Ninja Multi-Config"`, then build with
+  `cmake --build ../out --config Release`
+- CI lives in `.github/workflows/extremegram-build.yml` (`windows-2022` runner)
 
 ## Key Files
 
