@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=rua.YandereGram
+Exec=@CMAKE_INSTALL_FULL_BINDIR@/yanderegram

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <component type="desktop">
-    <id>rua.Yurigram</id>
+    <id>rua.YandereGram</id>
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-3.0</project_license>
-    <name>Yurigram</name>
+    <name>YandereGram</name>
     <summary>Unofficial Telegram desktop client with additional features</summary>
     <description>
-        <p>Yurigram is an unofficial Telegram desktop client with additional features and enhancements.</p>
+        <p>YandereGram is an unofficial Telegram desktop client with additional features and enhancements.</p>
     </description>
     <categories>
         <category>Network</category>
@@ -65,10 +65,10 @@
         <content_attribute id="money-gambling">none</content_attribute>
         <content_attribute id="money-advertising">moderate</content_attribute>
     </content_rating>
-    <launchable type="desktop-id">rua.Yurigram.desktop</launchable>
+    <launchable type="desktop-id">rua.YandereGram.desktop</launchable>
     <provides>
-        <binary>yurigram</binary>
-        <dbus type="session">rua.Yurigram</dbus>
+        <binary>yanderegram</binary>
+        <dbus type="session">rua.YandereGram</dbus>
         <mediatype>x-scheme-handler/tg</mediatype>
     </provides>
 </component>

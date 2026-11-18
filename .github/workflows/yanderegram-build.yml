@@ -1,4 +1,4 @@
-name: Build ExtremeGram (Windows)
+name: Build YandereGram (Windows)
 on:
   workflow_dispatch:
 permissions:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          path: TBuild/ExtremeGram
+          path: TBuild/YandereGram
       - name: Check configuration
         env:
           API_ID: ${{ secrets.TDESKTOP_API_ID }}
@@ -30,7 +30,7 @@ jobs:
         id: keys
         shell: bash
         run: |
-          HASH=$(sha256sum "$GITHUB_WORKSPACE/TBuild/ExtremeGram/Telegram/build/prepare/prepare.py" | awk '{ print $1 }')
+          HASH=$(sha256sum "$GITHUB_WORKSPACE/TBuild/YandereGram/Telegram/build/prepare/prepare.py" | awk '{ print $1 }')
           CPPTDIR=$(find "/c/Program Files (x86)/Windows Kits/10/Include" -maxdepth 2 -type d -name cppwinrt 2>/dev/null | sort -V | tail -1)
           WINRT=$(find "$CPPTDIR" -type f -name '*.h' -exec sha256sum {} + 2>/dev/null | LC_ALL=C sort | sha256sum | awk '{ print $1 }')
           HASH=$(printf '%s-%s' "$HASH" "$WINRT" | sha256sum | awk '{ print $1 }')
@@ -65,7 +65,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cd /d "%GITHUB_WORKSPACE%\TBuild\ExtremeGram\Telegram\build\prepare"
+          cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram\build\prepare"
           win.bat qt6 skip-debug skip-dump-syms silent
       # Drop intermediates so the caches stay below the 10 GB limit.
       - name: Prune libraries for cache
@@ -120,33 +120,33 @@ jobs:
           API_HASH: ${{ secrets.TDESKTOP_API_HASH }}
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cd /d "%GITHUB_WORKSPACE%\TBuild\ExtremeGram\Telegram"
+          cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
           configure.bat -G "Ninja Multi-Config" -D TDESKTOP_API_ID=%API_ID% -D TDESKTOP_API_HASH=%API_HASH% -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON
       - name: Compile
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cd /d "%GITHUB_WORKSPACE%\TBuild\ExtremeGram\Telegram"
+          cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
           cmake --build ../out --config Release --parallel 4
       - name: Package
         shell: pwsh
         run: |
-          $out = "TBuild/ExtremeGram/out/Release"
-          $exe = Get-ChildItem -Path $out -Filter *.exe | Select-Object -First 1
+          $out = "TBuild/YandereGram/out/Release"
+          $exe = Get-ChildItem -Path $out -Filter YandereGram.exe | Select-Object -First 1
           if (-not $exe) {
-            Get-ChildItem -Path TBuild/ExtremeGram/out -Recurse -Filter *.exe | Select-Object FullName | Out-String
-            throw "no .exe found under out/"
+            Get-ChildItem -Path TBuild/YandereGram/out -Recurse -Filter *.exe | Select-Object FullName | Out-String
+            throw "no YandereGram.exe found under out/"
           }
-          Compress-Archive -Path $exe.FullName -DestinationPath ExtremeGram-win64.zip -Force
-          (Get-FileHash ExtremeGram-win64.zip -Algorithm SHA256).Hash | Out-File -Encoding ascii ExtremeGram-win64.zip.sha256
+          Compress-Archive -Path $exe.FullName -DestinationPath YandereGram-win64.zip -Force
+          (Get-FileHash YandereGram-win64.zip -Algorithm SHA256).Hash | Out-File -Encoding ascii YandereGram-win64.zip.sha256
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         continue-on-error: true
         with:
-          name: ExtremeGram-win64
+          name: YandereGram-win64
           path: |
-            ExtremeGram-win64.zip
-            ExtremeGram-win64.zip.sha256
+            YandereGram-win64.zip
+            YandereGram-win64.zip.sha256
           if-no-files-found: error
           retention-days: 30
       - name: Publish release
@@ -159,11 +159,11 @@ jobs:
           gh release create "$tag" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title "ExtremeGram build ${GITHUB_RUN_ID}" \
+            --title "YandereGram build ${GITHUB_RUN_ID}" \
             --notes "Automated builds of ${GITHUB_REF_NAME} at ${GITHUB_SHA}." \
             || true
           gh release upload "$tag" \
             --repo "$GITHUB_REPOSITORY" \
-            ExtremeGram-win64.zip \
-            ExtremeGram-win64.zip.sha256 \
+            YandereGram-win64.zip \
+            YandereGram-win64.zip.sha256 \
             --clobber

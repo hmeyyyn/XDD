@@ -96,7 +96,7 @@
   </qresource>
   <qresource prefix="/misc">
     <file alias="default_shortcuts-custom.json">../../default_shortcuts-custom.json</file>
-    <file alias="rua.Yurigram.desktop">../../../../lib/xdg/rua.Yurigram.desktop</file>
+    <file alias="rua.YandereGram.desktop">../../../../lib/xdg/rua.YandereGram.desktop</file>
   </qresource>
   <qresource prefix="/localization">
     <file alias="en.json">../../langs/localization/en.json</file>

@@ -173,7 +173,7 @@ cmake --build "l:\Telegram\tx64\out" --config Debug --target Telegram
 - Build dependencies in `../Libraries`, populated by `prepare\win.bat`
 - Configure with `configure.bat -G "Ninja Multi-Config"`, then build with
   `cmake --build ../out --config Release`
-- CI lives in `.github/workflows/extremegram-build.yml` (`windows-2022` runner)
+- CI lives in `.github/workflows/yanderegram-build.yml` (`windows-2022` runner)
 
 ## Key Files
 
