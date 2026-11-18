@@ -147,9 +147,10 @@ cd Telegram\build\prepare && win.bat qt6 skip-debug skip-dump-syms silent
 cd ..\..\Telegram && configure.bat -G "Ninja Multi-Config" -D TDESKTOP_API_ID=%API_ID% -D TDESKTOP_API_HASH=%API_HASH%
 ```
 
-The build requires `API_ID` and `API_HASH` in the environment. The Linux build
-scripts (Docker environment, AppImage CI, snap, Nix, `scripts/build_debug.sh`)
-were removed from this checkout: only the Windows build is supported.
+The build requires `API_ID` and `API_HASH` in the environment. The Linux and
+macOS build scripts (Docker environment, AppImage CI, snap, Nix, Xcode/Mac App
+Store scripts, `scripts/build_debug.sh`) were removed from this checkout: only
+the Windows build is supported.
 
 **Important:** When running cmake from a shell that doesn't support `cd`, use quoted absolute paths:
 ```bash
@@ -157,24 +158,6 @@ cmake --build "l:\Telegram\tx64\out" --config Debug --target Telegram
 ```
 
 **Never build Release** - it's extremely heavy and not needed for routine changes.
-
-**On macOS, never run an Xcode clean against `out/`** - not `--target clean`,
-not `--clean-first` with any target, not `xcodebuild ... clean` and not a
-Clean in the Xcode app. Xcode's build-products folder for `Telegram` is
-`out/Debug`, which also holds the portable account folders. When `out/Debug`
-carries the `com.apple.xcode.CreatedByBuildSystem` extended attribute,
-`--target clean` deletes `out/Debug` with every folder in it, and
-`--target Telegram --clean-first` does the same before it builds. Without the
-attribute, `--target clean` refuses to delete `out/Debug` and ends
-`** CLEAN FAILED **` (exit 65). It ends the same way when it refuses only
-another, unmarked products folder and deletes a marked `out/Debug`, so exit 65
-alone does not prove that `out/Debug` survived. To force a full recompile,
-follow the `out/build` deletion in "### Forcing a full recompile on macOS"
-under "## Troubleshooting" exactly as written there, its precondition and its
-checks before and after the rebuild included. Never mark `out/Debug` deletable
-with `xattr -w com.apple.xcode.CreatedByBuildSystem true`, as the note in
-Xcode's refusal suggests, and never move, rename or remove any `out/Debug`
-entry to make a clean succeed.
 
 ## Platform-Specific Requirements
 
@@ -185,23 +168,6 @@ entry to make a clean succeed.
   - "x86 Native Tools Command Prompt" for `win`
   - "ARM64 Native Tools Command Prompt" for `winarm`
 - Dependencies: `../win64/Libraries` (64-bit) or `../Libraries` (32-bit)
-
-### macOS
-- Requires Xcode
-- Dependencies: `../Libraries/local/Qt-*`
-- First-time configure of a new `out/` tree: set the `QT` environment variable
-  to the Qt version this checkout actually has, for example `export QT=6.11.1`
-  when `../Libraries/local/Qt-6.11.1` is the installed one. The value names a
-  directory, so it is the checkout's version, not a constant.
-- Reconfiguring an existing `out/` tree: do **not** export `QT`. Run
-  `env -u QT cmake -S . -B out` instead. `cmake/external/qt/package.cmake`
-  writes an exported `QT` into the `qt_requested` cache entry with `FORCE`, so
-  it overwrites the version the tree was already configured with instead of
-  being ignored. A value that disagrees with the configured tree then fails the
-  regeneration, and the generated project keeps the source list it was last
-  generated with: newly added sources are never compiled — which surfaces later
-  as undefined-symbol link errors rather than as a configure error — and newly
-  added `.style` modules leave the generated `style_*.h` includes stale.
 
 ### Windows
 - Build dependencies in `../Libraries`, populated by `prepare\win.bat`
@@ -221,24 +187,6 @@ Ensure the repository is in `L:\Telegram\tdesktop`. The build system requires `.
 
 ### Build fails with "wrong command prompt"
 On Windows, use the correct Visual Studio Native Tools Command Prompt matching your target (x64/x86/ARM64).
-
-### macOS crashes while reading the cached language pack
-
-After an incremental Xcode build that regenerated `lang.strings` outputs, the
-app can link a new generated key lookup with stale objects that still use an
-older `kKeysCount`. The characteristic failure is:
-
-- the Debug log stops immediately after
-  `Lang Info: Loaded cached, keys: ...`;
-- stderr and `tdata/working` may be empty;
-- a fresh `~/Library/Logs/DiagnosticReports/Telegram-*.ips` shows `SIGABRT`
-  from `std::vector<unsigned char>::operator[]`, then
-  `Lang::Instance::applyValue()`, `fillFromSerialized()`, and
-  `Local::readLangPack()`.
-
-If this exact startup failure repeats twice, stop and report the failure. Do
-not launch the app, alter portable data, or perform a clean rebuild as an
-automated recovery step.
 
 ### Build output locks
 
