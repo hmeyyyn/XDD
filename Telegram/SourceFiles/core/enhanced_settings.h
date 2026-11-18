@@ -251,6 +251,7 @@ struct Descriptor {
 	std::string_view storageKey;
 	std::string_view controlId;
 	const tr::phrase<> *title = nullptr;
+	const tr::phrase<> *description = nullptr;
 	StoredValue defaultValue;
 	std::optional<IntegerConstraint> integerConstraint;
 	Normalization normalization = Normalization::None;

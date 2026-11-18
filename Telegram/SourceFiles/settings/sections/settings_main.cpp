@@ -505,9 +505,6 @@ void BuildSectionButtons(SectionBuilder &builder) {
 }
 
 void BuildEnhancedSection(SectionBuilder &builder) {
-	builder.addDivider();
-	builder.addSkip();
-
 	builder.addSectionButton({
 		.title = tr::lng_settings_enhanced(),
 		.targetSection = EnhancedId(),
@@ -520,6 +517,9 @@ void BuildEnhancedSection(SectionBuilder &builder) {
 		.icon = { &st::menuIconBot },
 		.keywords = { u"bot"_q, u"bot use"_q, u"api"_q },
 	});
+
+	builder.addDivider();
+	builder.addSkip();
 }
 
 void BuildInterfaceScale(SectionBuilder &builder) {
@@ -802,9 +802,9 @@ void Main::setupContent() {
 		});
 		builder.addDivider();
 		builder.addSkip();
+		BuildEnhancedSection(builder);
 		BuildValidationSuggestions(builder);
 		BuildSectionButtons(builder);
-		BuildEnhancedSection(builder);
 		builder.addSkip();
 		BuildInterfaceScale(builder);
 		BuildPremiumSection(builder);
@@ -876,9 +876,9 @@ const auto kMeta = BuildHelper({
 		};
 	});
 
+	BuildEnhancedSection(builder);
 	BuildValidationSuggestions(builder);
 	BuildSectionButtons(builder);
-	BuildEnhancedSection(builder);
 
 	builder.addSkip();
 

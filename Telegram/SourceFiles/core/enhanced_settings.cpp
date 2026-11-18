@@ -82,8 +82,125 @@ Descriptor Integer(
 	};
 }
 
+[[nodiscard]] const tr::phrase<> *DescriptionFor(OptionId id) {
+	switch (id) {
+		case OptionId::OnlineSpam:
+			return &tr::lng_settings_online_spam_desc;
+		case OptionId::ShowMessagesId:
+			return &tr::lng_settings_show_message_id_desc;
+		case OptionId::ShowMessageForwardCount:
+			return &tr::lng_settings_show_message_forward_count_desc;
+		case OptionId::ExtraContextMenuOptions:
+			return &tr::lng_settings_extra_context_menu_options_desc;
+		case OptionId::ShowPhoneNumber:
+			return &tr::lng_settings_show_phone_number_desc;
+		case OptionId::RepeaterReplyToOriginal:
+			return &tr::lng_settings_repeater_reply_to_orig_msg_desc;
+		case OptionId::DisableCloudDraftSync:
+			return &tr::lng_settings_disable_cloud_draft_sync_desc;
+		case OptionId::DisableSyncDraftToCloud:
+			return &tr::lng_settings_disable_sync_draft_to_cloud_desc;
+		case OptionId::ShowScheduledButton:
+			return &tr::lng_settings_show_scheduled_button_desc;
+		case OptionId::StereoMode:
+			return &tr::lng_settings_stereo_mode_desc;
+		case OptionId::Bitrate:
+			return &tr::lng_bitrate_controller_desc;
+		case OptionId::HideAllChats:
+			return &tr::lng_settings_hide_all_chats_desc;
+		case OptionId::ReplaceEditButton:
+			return &tr::lng_settings_replace_edit_button_desc;
+		case OptionId::HdVideo:
+			return &tr::lng_settings_enable_hd_video_desc;
+		case OptionId::DisableLinkWarning:
+			return &tr::lng_settings_disable_link_warning_desc;
+		case OptionId::LinkPreviewRules:
+			return &tr::lng_link_preview_rules_desc;
+		case OptionId::HideBlockedMessages:
+			return &tr::lng_settings_hide_messages_desc;
+		case OptionId::DisablePremiumAnimation:
+			return &tr::lng_settings_disable_premium_animation_desc;
+		case OptionId::DisableGlobalSearch:
+			return &tr::lng_settings_disable_global_search_desc;
+		case OptionId::ShowMediaMetadata:
+			return &tr::lng_settings_show_media_metadata_desc;
+		case OptionId::ShowGifMediaControls:
+			return &tr::lng_settings_show_gif_media_controls_desc;
+		case OptionId::CommunityChatClick:
+			return &tr::lng_settings_community_chat_click_desc;
+		case OptionId::ShowGroupSenderAvatar:
+			return &tr::lng_settings_show_group_sender_avatar_desc;
+		case OptionId::ShowGroupSenderOnlineStatus:
+			return &tr::lng_settings_show_group_sender_online_status_desc;
+		case OptionId::ShowSeconds:
+			return &tr::lng_settings_show_seconds_desc;
+		case OptionId::RichMessagePreviewBlocksLimit:
+			return &tr::lng_settings_rich_message_preview_blocks_desc;
+		case OptionId::ForceShowWebPagePreview:
+			return &tr::lng_settings_force_show_webpage_preview_desc;
+		case OptionId::DisableAutoFetchWebPagePreview:
+			return &tr::lng_settings_disable_auto_fetch_webpage_preview_desc;
+		case OptionId::RemoveMediaSpoiler:
+			return &tr::lng_settings_remove_media_spoiler_desc;
+		case OptionId::HideDeleteForOthersCheckbox:
+			return &tr::lng_settings_hide_delete_for_others_checkbox_desc;
+		case OptionId::StickerHeight:
+			return &tr::lng_settings_sticker_height_desc;
+		case OptionId::HideCounter:
+			return &tr::lng_settings_hide_counter_desc;
+		case OptionId::TranslateProvider:
+			return &tr::lng_translate_provider_setting_desc;
+		case OptionId::TranslateToTc:
+			return &tr::lng_settings_translate_to_tc_desc;
+		case OptionId::HideStories:
+			return &tr::lng_settings_hide_stories_desc;
+		case OptionId::ForceMobile:
+			return &tr::lng_settings_force_mobile_desc;
+		case OptionId::ShowSimilarOnJoined:
+			return &tr::lng_settings_show_similar_on_joined_desc;
+		case OptionId::MoreRightActionComments:
+			return &tr::lng_settings_more_right_action_comments_desc;
+		case OptionId::SendCommentAfterForwarding:
+			return &tr::lng_settings_send_comment_after_forwarding_desc;
+		case OptionId::MprisCallHangup:
+			return &tr::lng_settings_mpris_call_hangup_desc;
+		case OptionId::ScreenshotMode:
+			return &tr::lng_settings_screen_shot_mode_desc;
+		case OptionId::AllowScreenshots:
+			return &tr::lng_settings_allow_screenshots_desc;
+		case OptionId::HideStarRatings:
+			return &tr::lng_settings_hide_star_ratings_desc;
+		case OptionId::ShowPeerId:
+			return &tr::lng_settings_show_peer_id_desc;
+		case OptionId::PeerIdType:
+			return &tr::lng_settings_peer_id_type_desc;
+		case OptionId::LlmTranslateEndpoint:
+			return &tr::lng_translate_llm_endpoint_desc;
+		case OptionId::LlmTranslateModel:
+			return &tr::lng_translate_llm_model_desc;
+		case OptionId::LlmTranslateExtraParameters:
+			return &tr::lng_translate_llm_extra_parameters_desc;
+		case OptionId::ShowRecentForwardTargets:
+			return &tr::lng_settings_show_recent_forward_targets_desc;
+		case OptionId::HideGramBalance:
+			return &tr::lng_settings_hide_gram_balance_desc;
+		case OptionId::ShowPeerInfo:
+			return &tr::lng_settings_show_peer_info_desc;
+		case OptionId::Count:
+			break;
+	} // switch
+	return nullptr;
+}
+
+DescriptorList WithDescriptions(DescriptorList list) {
+	for (auto &entry : list) {
+		entry.description = DescriptionFor(entry.id);
+	}
+	return list;
+}
+
 const DescriptorList &DescriptorData() {
-	static const auto result = DescriptorList{
+	static const auto result = WithDescriptions(DescriptorList{
 		Bool(OptionId::OnlineSpam, "online_spam",
 			&tr::lng_settings_online_spam, "enhanced/online-spam"),
 		Bool(OptionId::ShowMessagesId, "show_messages_id",
@@ -297,7 +414,7 @@ const DescriptorList &DescriptorData() {
 			"enhanced/hide-gram-balance"),
 		Bool(OptionId::ShowPeerInfo, "show_peer_info",
 			&tr::lng_settings_show_peer_info, "enhanced/show-peer-info"),
-	};
+	});
 	return result;
 }
 
