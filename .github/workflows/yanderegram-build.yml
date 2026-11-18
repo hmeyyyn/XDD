@@ -140,7 +140,7 @@ jobs:
           Compress-Archive -Path $exe.FullName -DestinationPath YandereGram-win64.zip -Force
           (Get-FileHash YandereGram-win64.zip -Algorithm SHA256).Hash | Out-File -Encoding ascii YandereGram-win64.zip.sha256
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         continue-on-error: true
         with:
           name: YandereGram-win64
