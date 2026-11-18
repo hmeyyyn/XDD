@@ -234,7 +234,7 @@ bool GenerateDesktopFile(
 	DEBUG_LOG(("App Info: placing .desktop file to %1").arg(targetPath));
 	if (!QDir(targetPath).exists()) QDir().mkpath(targetPath);
 
-	const auto sourceFile = u":/misc/rua.Yurigram.desktop"_q;
+	const auto sourceFile = u":/misc/rua.YandereGram.desktop"_q;
 	const auto targetFile = targetPath
 		+ QGuiApplication::desktopFileName()
 		+ u".desktop"_q;
@@ -372,7 +372,7 @@ bool GenerateDesktopFile(
 		hashMd5Hex(d.constData(), d.size(), md5Hash);
 
 		if (!Core::Launcher::Instance().customWorkingDir()) {
-			QFile::remove(u"%1rua.Yurigram._%2.desktop"_q.arg(
+			QFile::remove(u"%1rua.YandereGram._%2.desktop"_q.arg(
 				targetPath,
 				md5Hash));
 
@@ -381,7 +381,7 @@ bool GenerateDesktopFile(
 			hashMd5Hex(exePath.constData(), exePath.size(), md5Hash);
 		}
 
-		QFile::remove(u"%1rua.Yurigram.desktop"_q.arg(
+		QFile::remove(u"%1rua.YandereGram.desktop"_q.arg(
 			targetPath));
 	}
 
@@ -439,10 +439,10 @@ bool GenerateServiceFile(bool silent = false) {
 		const auto d = QFile::encodeName(QDir(cWorkingDir()).absolutePath());
 		hashMd5Hex(d.constData(), d.size(), md5Hash);
 
-		QFile::remove(u"%1rua.Yurigram._%2.service"_q.arg(
+		QFile::remove(u"%1rua.YandereGram._%2.service"_q.arg(
 			targetPath,
 			md5Hash));
-		QFile::remove(u"%1rua.Yurigram.service"_q.arg(targetPath));
+		QFile::remove(u"%1rua.YandereGram.service"_q.arg(targetPath));
 	}
 
 	XdgDBus::DBusProxy::new_for_bus(
@@ -750,11 +750,11 @@ void start() {
 		}
 
 		if (false && !Core::UpdaterDisabled()) {
-			return u"rua.Yurigram._%1"_q.arg(
+			return u"rua.YandereGram._%1"_q.arg(
 				Core::Launcher::Instance().instanceHash().constData());
 		}
 
-		return u"rua.Yurigram"_q;
+		return u"rua.YandereGram"_q;
 	}());
 
 	LOG(("App ID: %1").arg(QGuiApplication::desktopFileName()));

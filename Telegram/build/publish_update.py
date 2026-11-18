@@ -1,4 +1,4 @@
-"""Publish a signed Yurigram TDUP v2 package to the update channel.
+"""Publish a signed YandereGram TDUP v2 package to the update channel.
 
 Requires Telethon==1.45.0 and the dedicated GitHub Actions secrets
 UPDATE_API_ID, UPDATE_API_HASH and UPDATE_BOT_TOKEN, passed through environment
@@ -249,7 +249,7 @@ async def publish(
         uploaded = await client.send_file(
             channel,
             stream,
-            caption=f"Yurigram {platform_key} stable {package.base}",
+            caption=f"YandereGram {platform_key} stable {package.base}",
             force_document=True,
             mime_type="application/octet-stream",
             attributes=[types.DocumentAttributeFilename(filename)],

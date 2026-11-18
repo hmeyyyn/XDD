@@ -30,12 +30,12 @@ const PROPERTYKEY pkey_AppUserModel_ToastActivator = { { 0x9F4C2855, 0x9F79, 0x4
 #ifdef OS_WIN_STORE
 const WCHAR AppUserModelIdBase[] = L"Telegram.TelegramDesktop.Store";
 #else // OS_WIN_STORE
-const WCHAR AppUserModelIdBase[] = L"Rua.Yurigram";
+const WCHAR AppUserModelIdBase[] = L"Rua.YandereGram";
 #endif // OS_WIN_STORE
 
 const auto kCurrentShortcutNames = std::array{
-	u"Yurigram.lnk"_q,
-	u"Yurigram/Yurigram.lnk"_q,
+	u"YandereGram.lnk"_q,
+	u"YandereGram/YandereGram.lnk"_q,
 };
 const auto kHistoricalShortcutName =
 	u"Telegram Win (Unofficial)/Telegram.lnk"_q;

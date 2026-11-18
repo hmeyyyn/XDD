@@ -66,7 +66,7 @@ namespace Settings {
 namespace {
 
 const auto kEnhancedSettingsClipboardPrefix
-	= u"yurigram-settings:"_q;
+	= u"yanderegram-settings:"_q;
 
 struct DecodeEnhancedSettingsResult {
 	bool ok = false;

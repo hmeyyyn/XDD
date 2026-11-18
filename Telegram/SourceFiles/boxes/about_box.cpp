@@ -49,11 +49,11 @@ rpl::producer<TextWithEntities> Text2() {
 		lt_gpl_link,
 		rpl::single(tr::link(
 			"GNU GPL",
-			"https://github.com/Revincx/Yurigram/blob/dev/LICENSE")),
+			"https://github.com/hmeyyyn/XDD/blob/main/LICENSE")),
 		lt_github_link,
 		rpl::single(tr::link(
 			"GitHub",
-			"https://github.com/Revincx/Yurigram")),
+			"https://github.com/hmeyyyn/XDD")),
 		tr::marked);
 }
 

@@ -1,11 +1,11 @@
 [Desktop Entry]
-Name=Yurigram
+Name=YandereGram
 Comment=Unofficial desktop version of Telegram messaging app
-TryExec=yurigram
-Exec=yurigram -- %U
-Icon=rua.Yurigram
+TryExec=yanderegram
+Exec=yanderegram -- %U
+Icon=rua.YandereGram
 Terminal=false
-StartupWMClass=rua.Yurigram
+StartupWMClass=rua.YandereGram
 Type=Application
 Categories=Chat;Network;InstantMessaging;Qt;
 MimeType=x-scheme-handler/tg;x-scheme-handler/tonsite;x-scheme-handler/ton;
@@ -17,6 +17,6 @@ X-GNOME-UsesNotifications=true
 X-GNOME-SingleWindow=true
 
 [Desktop Action quit]
-Exec=yurigram -quit
-Name=Quit Yurigram
+Exec=yanderegram -quit
+Name=Quit YandereGram
 Icon=application-exit

@@ -60,11 +60,11 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "Yurigram"
-            VALUE "FileDescription", "Yurigram"
+            VALUE "CompanyName", "YandereGram"
+            VALUE "FileDescription", "YandereGram"
             VALUE "FileVersion", "7.3.5.0"
             VALUE "LegalCopyright", "Copyright (C) 2014-2025"
-            VALUE "ProductName", "Yurigram"
+            VALUE "ProductName", "YandereGram"
             VALUE "ProductVersion", "7.3.5.0"
         END
     END
