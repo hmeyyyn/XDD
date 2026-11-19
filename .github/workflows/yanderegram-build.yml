@@ -16,6 +16,10 @@ jobs:
         with:
           submodules: recursive
           path: TBuild/YandereGram
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Check configuration
         env:
           API_ID: ${{ secrets.TDESKTOP_API_ID }}
@@ -64,7 +68,7 @@ jobs:
       - name: Prepare dependencies
         shell: cmd
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
           cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram\build\prepare"
           win.bat qt6 skip-debug skip-dump-syms silent
       # Drop intermediates so the caches stay below the 10 GB limit.
@@ -119,13 +123,13 @@ jobs:
           API_ID: ${{ secrets.TDESKTOP_API_ID }}
           API_HASH: ${{ secrets.TDESKTOP_API_HASH }}
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
           cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
           configure.bat -G "Ninja Multi-Config" -D TDESKTOP_API_ID=%API_ID% -D TDESKTOP_API_HASH=%API_HASH% -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON
       - name: Compile
         shell: cmd
         run: |
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
           cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
           cmake --build ../out --config Release --parallel 4
       - name: Package
