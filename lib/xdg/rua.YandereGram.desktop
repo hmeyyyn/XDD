@@ -1,0 +1,22 @@
+[Desktop Entry]
+Name=YandereGram
+Comment=Unofficial desktop version of Telegram messaging app
+TryExec=yanderegram
+Exec=yanderegram -- %U
+Icon=rua.YandereGram
+Terminal=false
+StartupWMClass=rua.YandereGram
+Type=Application
+Categories=Chat;Network;InstantMessaging;Qt;
+MimeType=x-scheme-handler/tg;x-scheme-handler/tonsite;x-scheme-handler/ton;
+Keywords=tg;chat;im;messaging;messenger;sms;tdesktop;
+Actions=quit;
+DBusActivatable=true
+SingleMainWindow=true
+X-GNOME-UsesNotifications=true
+X-GNOME-SingleWindow=true
+
+[Desktop Action quit]
+Exec=yanderegram -quit
+Name=Quit YandereGram
+Icon=application-exit
