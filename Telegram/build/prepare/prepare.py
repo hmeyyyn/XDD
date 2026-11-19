@@ -5,7 +5,9 @@ sys.dont_write_bytecode = True
 scriptPath = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(scriptPath + '/..')
 import qt_version
-import build_mac
+
+if sys.platform == 'darwin':
+    import build_mac
 
 def finish(code):
     global executePath
