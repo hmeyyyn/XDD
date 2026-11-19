@@ -116,17 +116,18 @@ void CopyGrantLink(
 		quint64 userId,
 		const QString &name,
 		Role role) {
-	const auto link = Core::Badges::MintGrant(userId, role);
+	const auto link = Core::Badges::MintGrant(userId, uchar(role));
 	if (link.isEmpty()) {
 		controller->showToast(tr::lng_client_badge_no_key(tr::now));
 		return;
 	}
 	TextUtilities::SetClipboardText({ link });
 	controller->showToast({
-		.text = tr::marked(tr::lng_client_badge_grant_copied(
+		.text = tr::lng_client_badge_grant_copied(
 			tr::now,
 			lt_user,
-			tr::bold(name))),
+			tr::bold(name),
+			tr::marked),
 		.iconLottie = u"toast/contact_check"_q,
 		.iconLottieSize = st::toastLottieIconSize,
 	});
@@ -174,10 +175,12 @@ bool ApplyLink(not_null<Main::Session*> session, const QString &command) {
 	const auto grant = Core::Badges::ParseGrant(
 		command.mid(prefix.size()).toLatin1());
 	if (!grant
-		|| !Core::Badges::VerifyGrant(*grant, kIssuerPublicKey.utf8())) {
+		|| !Core::Badges::VerifyGrant(
+			*grant,
+			Core::Badges::kIssuerPublicKey.utf8())) {
 		return false;
 	}
-	if (grant->userId != session->userId().value) {
+	if (grant->userId != session->userId().bare) {
 		return false;
 	}
 	const auto role = RoleFromCode(grant->role);

@@ -331,7 +331,8 @@ InnerWidget::InnerWidget(
 	+ st::defaultDialogRow.photoSize
 	+ st::defaultDialogRow.padding.left())
 , _childListShown(std::move(childListShown))
-, _freezeTimer([=] { _shownList->unfreeze(); update(); }) {
+, _freezeTimer([=] { _shownList->unfreeze(); update(); })
+, _clientMarkAnimation([=] { update(); }) {
 	setAttribute(Qt::WA_OpaquePaintEvent, true);
 	setAccessibleName(tr::lng_recent_chats(tr::now));
 
@@ -3835,10 +3836,10 @@ void InnerWidget::paintCachedRowOverlays(
 				p,
 				i->second.clientMark,
 				context.active
-					? *st::dialogsVerifiedIconBgActive
+					? st::dialogsVerifiedIconBgActive
 					: context.selected
-					? *st::dialogsVerifiedIconBgOver
-					: *st::dialogsVerifiedIconBg,
+					? st::dialogsVerifiedIconBgOver
+					: st::dialogsVerifiedIconBg,
 				role,
 				context.now);
 		}

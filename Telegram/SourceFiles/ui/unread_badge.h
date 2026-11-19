@@ -126,6 +126,12 @@ void DrawTextBadge(
 void DrawClientMark(
 	Painter &p,
 	QRect rect,
+	const QColor &fg,
+	ClientBadge::Role role,
+	crl::time now = 0);
+void DrawClientMark(
+	Painter &p,
+	QRect rect,
 	const style::color &fg,
 	ClientBadge::Role role,
 	crl::time now = 0);

@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/click_handler_types.h" // ClickHandlerContext
 #include "core/ui_integration.h"
 #include "core/update_checker.h"
+#include "ui/unread_badge.h"
 #include "history/view/history_view_cursor_state.h"
 #include "history/history_item_components.h"
 #include "history/history_item_helpers.h"
@@ -2565,7 +2566,7 @@ void Message::paintFromName(
 		auto color = nameFg;
 		color.setAlpha(115);
 		if (marked) {
-			DrawClientMark(
+			Ui::DrawClientMark(
 				p,
 				QRect(QPoint(x, y), Size(st::emojiSize)),
 				color,
