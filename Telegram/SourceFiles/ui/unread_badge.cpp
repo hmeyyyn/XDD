@@ -532,7 +532,7 @@ int PeerBadge::drawVerified(
 void DrawClientMark(
 		Painter &p,
 		QRect rect,
-		const style::color &fg,
+		const QColor &fg,
 		ClientBadge::Role role,
 		crl::time now) {
 	if (rect.isEmpty() || role == ClientBadge::Role::None) {
@@ -590,7 +590,7 @@ void DrawClientMark(
 
 	case ClientBadge::Role::BugHunter: {
 		// Cracked heart with a drop sliding down.
-		auto pen = QPen(fg->c);
+		auto pen = QPen(fg);
 		pen.setWidthF(1.7);
 		pen.setJoinStyle(Qt::RoundJoin);
 		p.setPen(pen);
@@ -616,7 +616,7 @@ void DrawClientMark(
 			? uchar(base::SafeRound(255. * (1. - (phase - 0.82) / 0.18)))
 			: uchar(255);
 		p.setPen(Qt::NoPen);
-		auto drop = fg->c;
+		auto drop = fg;
 		drop.setAlpha(alpha);
 		p.setBrush(drop);
 		p.drawEllipse(QPointF(13.6, 8.2 + offset), 1.05, 1.05);
@@ -624,7 +624,7 @@ void DrawClientMark(
 
 	case ClientBadge::Role::Developer: {
 		// Knife at an angle, a highlight running along the blade.
-		auto pen = QPen(fg->c);
+		auto pen = QPen(fg);
 		pen.setWidthF(1.7);
 		pen.setJoinStyle(Qt::RoundJoin);
 		pen.setCapStyle(Qt::RoundCap);
@@ -668,7 +668,7 @@ void DrawClientMark(
 
 	case ClientBadge::Role::Founder: {
 		// Collar with a bell hanging on it, the bell swinging.
-		auto pen = QPen(fg->c);
+		auto pen = QPen(fg);
 		pen.setWidthF(1.7);
 		pen.setCapStyle(Qt::RoundCap);
 		p.setPen(pen);
@@ -700,6 +700,15 @@ void DrawClientMark(
 	}
 
 	p.restore();
+}
+
+void DrawClientMark(
+		Painter &p,
+		QRect rect,
+		const style::color &fg,
+		ClientBadge::Role role,
+		crl::time now) {
+	DrawClientMark(p, rect, fg->c, role, now);
 }
 
 } // namespace Ui

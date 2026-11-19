@@ -11,6 +11,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 // it can be reused by the client and by a focused test.
 
 #include <QtCore/QByteArray>
+#include <QtCore/QString>
 
 #include <optional>
 
