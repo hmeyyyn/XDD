@@ -4297,9 +4297,13 @@ bool Message::getStateFromName(
 			&& marked) {
 			const auto x = availableLeft + nameWidth;
 			if (point.x() >= x && point.x() < x + st::emojiSize) {
-				outResult->link = std::make_shared<LambdaClickHandler>([=] {
-					ClientBadge::ShowToast(window());
-				});
+				outResult->link = std::make_shared<LambdaClickHandler>(
+					[=](ClickContext context) {
+						const auto my = context.other.value<ClickHandlerContext>();
+						if (const auto window = my.sessionWindow.get()) {
+							ClientBadge::ShowToast(window->widget());
+						}
+					});
 				return true;
 			}
 		}
