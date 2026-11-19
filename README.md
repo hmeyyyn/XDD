@@ -22,3 +22,50 @@
                   ##########
                      ####
 ```
+
+## YandereGram
+
+Неофициальный клиент на базе Telegram Desktop с бейджами ролей возле ника.
+
+### Сборка
+
+Сборка идёт на GitHub Actions. Один раз настройте секреты:
+Settings → Secrets and variables → Actions → New repository secret
+
+- `TDESKTOP_API_ID` — `api_id` с my.telegram.org
+- `TDESKTOP_API_HASH` — `api_hash` оттуда же
+
+Затем Actions → Build YandereGram (Windows) → Run workflow.
+Сборка занимает до 6 часов и кэширует зависимости между запусками.
+Результат — `YandereGram-win64.zip` в артефактах и в Releases.
+
+### Бейджи
+
+Четыре роли с анимированными иконками, видимые всем пользователям клиента:
+
+| Роль | Иконка |
+|---|---|
+| Supporter | бант с сердечком |
+| Bug Hunter | треснувшее сердце с каплей |
+| Developer | нож с бликом |
+| Founder | ошейник с бубенчиком |
+
+Роль хранится как невидимый символ в фамилии, поэтому обычный Telegram
+показывает нормальное имя.
+
+Себе: профиль → три точки → Мой бейдж.
+Другому: профиль человека → три точки → Выдать бейдж, затем отправьте
+скопированную ссылку `tg://badge/...` этому человеку.
+
+Выдача требует `badges/issuer.key` рядом с папкой данных клиента.
+Ключ создаётся командой `node tools/badges/issue.js keygen` и никогда
+не коммитится. Напечатанный публичный ключ вписывается в
+`Telegram/SourceFiles/core/badge_keys.h`.
+
+Выпустить ссылку вручную: `node tools/badges/issue.js grant <userId> <role>`,
+роли `supporter`, `bug`, `dev`, `founder`.
+
+### Лицензия
+
+Проект не связан с Telegram Messenger LLP. Telegram Desktop
+распространяется под GPL-3.0, изменения здесь также под GPL-3.0.

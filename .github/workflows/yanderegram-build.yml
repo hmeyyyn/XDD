@@ -1,6 +1,12 @@
 name: Build YandereGram (Windows)
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**/*.md"
+      - "badges/**"
 permissions:
   contents: write
 jobs:
