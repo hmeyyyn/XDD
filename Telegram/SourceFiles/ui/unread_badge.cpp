@@ -299,25 +299,22 @@ int PeerBadge::drawExisting(Painter &p, const Descriptor &descriptor) {
 		&& (!paintVerify || descriptor.bothVerifyAndStatus);
 	const auto paintStar = premiumStar && !paintVerify;
 
-	auto result = 0;
 	if (paintEmoji) {
-		auto &rectForName = descriptor.rectForName;
-		const auto verifyWidth = descriptor.verified->width();
-		if (paintVerify) {
-			rectForName.setWidth(rectForName.width() - verifyWidth);
-		}
-		result += drawPremiumEmojiStatus(p, descriptor);
 		if (!paintVerify) {
-			return result;
+			return drawPremiumEmojiStatus(p, descriptor);
 		}
-		rectForName.setWidth(rectForName.width() + verifyWidth);
-		descriptor.nameWidth += result;
+		auto layout = descriptor;
+		layout.rectForName.setWidth(
+			descriptor.rectForName.width() - descriptor.verified->width());
+		const auto emojiWidth = drawPremiumEmojiStatus(p, layout);
+		layout.rectForName = descriptor.rectForName;
+		layout.nameWidth += emojiWidth;
+		return emojiWidth + drawVerifyCheck(p, layout);
 	} else if (_emojiStatus) {
 		_emojiStatus->painted = false;
 	}
 	if (paintVerify) {
-		result += drawVerifyCheck(p, descriptor);
-		return result;
+		return drawVerifyCheck(p, descriptor);
 	} else if (paintStar) {
 		return drawPremiumStar(p, descriptor);
 	}
