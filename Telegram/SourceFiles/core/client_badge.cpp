@@ -29,7 +29,7 @@ namespace {
 // the role. Both live in the BMP, have no glyph and take no space, so every
 // other client renders the name exactly as it was typed. Variation selectors
 // give 16 codes, enough for the roles and any future one.
-constexpr auto kMarkPrefix = u"\u2063"_q;
+const auto kMarkPrefix = u"\u2063"_q;
 constexpr auto kRoleFirst = ushort(0xFE00);
 constexpr auto kMarkLength = 2;
 
