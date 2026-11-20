@@ -137,10 +137,20 @@ jobs:
           cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
           configure.bat -G "Ninja Multi-Config" -D TDESKTOP_API_ID=%API_ID% -D TDESKTOP_API_HASH=%API_HASH% -D DESKTOP_APP_DISABLE_AUTOUPDATE=ON
       - name: Compile
-        shell: cmd
+        shell: pwsh
+        working-directory: TBuild/YandereGram/Telegram
         run: |
-          cd /d "%GITHUB_WORKSPACE%\TBuild\YandereGram\Telegram"
-          cmake --build ../out --config Release --parallel 4
+          $log = Join-Path $env:RUNNER_TEMP 'compile.log'
+          cmake --build ../out --config Release --parallel 4 -- -k 0 2>&1 | Tee-Object -FilePath $log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            # Surface compiler and linker diagnostics in the run's annotations.
+            Select-String -Path $log -Pattern '(?:fatal )?error (?:C|LNK|RC)\d+\s*:|^ninja: error:' |
+              Select-Object -First 10 | ForEach-Object {
+                Write-Output ('::error::' + $_.Line.Replace('%', '%25'))
+              }
+          }
+          exit $code
       - name: Package
         shell: pwsh
         run: |
