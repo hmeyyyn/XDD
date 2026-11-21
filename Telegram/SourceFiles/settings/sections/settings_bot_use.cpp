@@ -336,7 +336,8 @@ void BotUseSettings::addToggleOption(
 			(*title)(),
 			std::move(*about),
 			st::settingsButtonNoIcon,
-			st::settingsExperimentalTitle)
+			st::settingsExperimentalTitle,
+			st::settingsExperimentalAbout)
 		: AddButtonWithIcon(content, (*title)(), st::settingsButtonNoIcon);
 	registerOption(key.id, button);
 	button->toggleOn(

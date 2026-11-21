@@ -487,7 +487,8 @@ not_null<Button*> AddButtonWithAbout(
 		rpl::producer<QString> titleText,
 		rpl::producer<QString> aboutText,
 		const style::SettingsButton &buttonStyle,
-		const style::FlatLabel &titleStyle) {
+		const style::FlatLabel &titleStyle,
+		const style::FlatLabel &aboutStyle) {
 	const auto &titlePadding = st::settingsExperimentalTitlePadding;
 	const auto &aboutPadding = st::settingsExperimentalAboutPadding;
 	const auto button = Ui::CreateChild<Button>(
@@ -504,7 +505,7 @@ not_null<Button*> AddButtonWithAbout(
 		object_ptr<Ui::FlatLabel>(
 			container,
 			std::move(aboutText),
-			st::settingsExperimentalAbout),
+			aboutStyle),
 		aboutPadding);
 	title->setAttribute(Qt::WA_TransparentForMouseEvents);
 	about->setAttribute(Qt::WA_TransparentForMouseEvents);
