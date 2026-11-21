@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "window/themes/window_theme.h"
 
 #include "window/themes/window_theme_preview.h"
@@ -568,6 +569,41 @@ void ChatBackground::initialRead() {
 	}
 }
 
+// Overlay only the presentation roles. Keep each underlying color so reset
+// returns to the installed theme, including after a day/night switch.
+namespace {
+void ApplyAppearanceColors() {
+	using Tint = Appearance::Tint;
+	static auto original = QMap<int, QColor>();
+	static auto painted = QMap<int, QColor>();
+	const auto rows = style::main_palette::data();
+	for (const auto &row : rows) {
+		const auto name = row.name;
+		const auto index = style::internal::GetPaletteIndex(name);
+		if (index < 0) continue;
+		const auto current = style::main_palette::get()->colorAtIndex(index)->c;
+		const auto base = (painted.contains(index) && painted.value(index) == current)
+			? original.value(index) : current;
+		auto custom = QColor();
+		if (name == QLatin1String("windowBg") || name == QLatin1String("dialogsBg") || name == QLatin1String("boxBg") || name == QLatin1String("historyComposeAreaBg")) custom = Appearance::Color(Tint::Surface);
+		else if (name == QLatin1String("windowFg") || name == QLatin1String("dialogsNameFg") || name == QLatin1String("historyTextInFg") || name == QLatin1String("historyTextOutFg")) custom = Appearance::Color(Tint::Ink);
+		else if (name == QLatin1String("msgInBg")) custom = Appearance::Color(Tint::Incoming);
+		else if (name == QLatin1String("msgOutBg")) custom = Appearance::Color(Tint::Outgoing);
+		else if (name == QLatin1String("windowBgActive") || name == QLatin1String("activeButtonBg") || name == QLatin1String("dialogsBgActive") || name == QLatin1String("dialogsUnreadBg") || name == QLatin1String("windowActiveTextFg") || name == QLatin1String("checkboxFg")) custom = Appearance::Color(Tint::Accent);
+		auto color = custom.isValid() ? custom : base;
+		if (Appearance::Get(Appearance::Key::Mono)) {
+			const auto gray = qGray(color.rgb());
+			color.setRgb(gray, gray, gray, color.alpha());
+		}
+		if (base == color) { original.remove(index); painted.remove(index); }
+		else { original[index] = base; painted[index] = color; }
+		if (current != color) {
+			style::main_palette::setColor(name, color.red(), color.green(), color.blue(), color.alpha());
+		}
+	}
+}
+} // namespace
+
 void ChatBackground::start() {
 	saveAdjustableColors();
 
@@ -575,11 +611,14 @@ void ChatBackground::start() {
 	) | rpl::on_next([=](const BackgroundUpdate &update) {
 		refreshThemeWatcher();
 		if (update.paletteChanged()) {
+			ApplyAppearanceColors();
 			style::NotifyPaletteChanged();
 		}
 	}, _lifetime);
 
 	initialRead();
+	ApplyAppearanceColors();
+	Appearance::Changes() | rpl::on_next([=] { appliedEditedPalette(); }, _lifetime);
 
 	Core::App().domain().activeSessionValue(
 	) | rpl::filter([=](Main::Session *session) {

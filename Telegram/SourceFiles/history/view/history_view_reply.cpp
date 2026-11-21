@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/history_view_reply.h"
 
 #include "core/click_handler_types.h"
@@ -787,7 +788,7 @@ Ui::Text::GeometryDescriptor Reply::textGeometry(
 	return { .layout = [=](int line) {
 		const auto skip = (line ? 0 : firstLineSkip);
 		const auto elided = !_multiline
-			|| (!_expanded && (line + 1 >= kNonExpandedLinesLimit));
+			|| (!_expanded && (line + 1 >= (Appearance::Get(Appearance::Key::QuoteLines) ? Appearance::Get(Appearance::Key::QuoteLines) : kNonExpandedLinesLimit)));
 		return Ui::Text::LineGeometry{
 			.left = skip,
 			.width = available - skip,
@@ -882,8 +883,19 @@ void Reply::paint(
 		cache->bg = QColor(0, 0, 0, 0);
 	}
 	Ui::Text::ValidateQuotePaintCache(*cache, quoteSt);
-	Ui::Text::FillQuotePaint(p, rect, *cache, quoteSt);
-	if (!Ui::UncoloredQuoteEnabled() && backgroundEmojiData) {
+	const auto shape = inBubble ? Appearance::Get(Appearance::Key::Quote) : 0;
+	if (!shape) {
+		Ui::Text::FillQuotePaint(p, rect, *cache, quoteSt);
+	} else if (shape == 1) {
+		p.fillRect(rect.x(), rect.y(), st::lineWidth * 2, rect.height(), st::windowActiveTextFg);
+	} else if (shape == 3) {
+		p.save();
+		p.setBrush(Qt::NoBrush);
+		p.setPen(st::windowActiveTextFg);
+		p.drawRoundedRect(rect.adjusted(1, 1, -1, -1), 3, 3);
+		p.restore();
+	}
+	if (!Ui::UncoloredQuoteEnabled() && backgroundEmojiData && !shape) {
 		ValidateBackgroundEmoji(
 			backgroundEmojiId,
 			colorCollectible,

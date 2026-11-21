@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/history_view_service_message.h"
 
 #include "history/view/media/history_view_media.h"
@@ -162,7 +163,7 @@ void PaintPreparedDate(
 		: w;
 	w = maxwidth - st::msgServiceMargin.left() - st::msgServiceMargin.left();
 
-	left += (w - dateTextWidth - st::msgServicePadding.left() - st::msgServicePadding.right()) / 2;
+	if (Appearance::Get(Appearance::Key::Dates) != 1) left += (w - dateTextWidth - st::msgServicePadding.left() - st::msgServicePadding.right()) / 2;
 	int height = st::msgServicePadding.top() + st::msgServiceFont->height + st::msgServicePadding.bottom();
 	ServiceMessagePainter::PaintBubble(
 		p,

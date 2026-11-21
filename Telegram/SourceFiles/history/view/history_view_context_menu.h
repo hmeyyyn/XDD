@@ -60,6 +60,9 @@ struct ContextMenuRequest {
 	PointState pointState = PointState();
 };
 
+// Returns a submenu owned by `menu` when compact actions are enabled.
+not_null<Ui::PopupMenu*> TranslationActionMenu(not_null<Ui::PopupMenu*> menu);
+
 base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 	not_null<ListWidget*> list,
 	const ContextMenuRequest &request);

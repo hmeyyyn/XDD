@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "dialogs/dialogs_row.h"
 
 #include "ui/chat/chat_theme.h" // CountAverageColor.
@@ -417,6 +418,23 @@ const style::DialogRow &Row::ComputeSt(
 		const auto hasTags = entry->hasChatsFilterTags(filterId);
 		const auto wideRow = history->peer->displayAsForum()
 			|| history->amMonoforumAdmin();
+		if (!wideRow && !hasTags) {
+			const auto density = Appearance::Get(Appearance::Key::Density);
+			const auto avatar = Appearance::Get(Appearance::Key::AvatarSize);
+			const auto lines = Appearance::Get(Appearance::Key::ListLines);
+			if (density || avatar || lines) {
+				static std::array<style::DialogRow, 27> styles;
+				auto &result = styles[(density * 3 + avatar) * 3 + lines];
+				result = density == 1 ? st::compactDialogRow : density == 2 ? st::spaciousDialogRow : st::defaultDialogRow;
+				const auto original = result.photoSize;
+				if (avatar) result.photoSize = avatar == 1 ? original * 3 / 4 : original * 5 / 4;
+				result.nameLeft += result.photoSize - original;
+				result.textLeft = result.nameLeft;
+				if (lines == 1) result.height += st::dialogsTextFont->height;
+				result.height = std::max(result.height, result.padding.top() + result.photoSize + 2);
+				return result;
+			}
+		}
 		return wideRow
 			? (hasTags ? st::taggedForumDialogRow : st::forumDialogRow)
 			: hasTags
@@ -430,7 +448,7 @@ const style::DialogRow &Row::ComputeSt(
 
 void Row::recountHeight(float64 narrowRatio, FilterId filterId) {
 	const auto &st = ComputeSt(_id.entry(), filterId);
-	_height = ((&st == &st::defaultDialogRow) || !_id.history())
+	_height = (_id.history() && !st.topicsHeight && !st.tagTop) ? st.height : ((&st == &st::defaultDialogRow) || !_id.history())
 		? st::defaultDialogRow.height
 		: anim::interpolate(
 			st.height,

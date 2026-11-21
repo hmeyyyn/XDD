@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "window/section_widget.h"
 
 #include "mainwidget.h"
@@ -297,6 +298,7 @@ void SectionWidget::setGeometryWithTopMoved(
 void SectionWidget::showAnimated(
 		SlideDirection direction,
 		const SectionSlideParams &params) {
+	if (Appearance::Get(Appearance::Key::Transitions) && !_showAnimation) { showFast(); return; }
 	validateSubsectionTabs();
 	if (_showAnimation) {
 		return;
@@ -385,7 +387,24 @@ void SectionWidget::PaintBackground(
 		clip = clip.translated(0, -fromy);
 	}
 	const auto fill = QSize(widget->width(), fillHeight);
-	PaintBackground(p, theme, fill, clip, paused);
+	const auto wallpaper = Appearance::Color(Appearance::Tint::Wallpaper);
+	if (wallpaper.isValid()) p.fillRect(clip, wallpaper);
+	else PaintBackground(p, theme, fill, clip, paused);
+	const auto grain = Appearance::Get(Appearance::Key::Grain);
+	if (grain) {
+		static const auto texture = [] {
+			auto image = QImage(64, 64, QImage::Format_ARGB32);
+			quint32 seed = 12345;
+			for (int y = 0; y < 64; ++y) for (int x = 0; x < 64; ++x) {
+				seed = 1664525U * seed + 1013904223U;
+				const auto v = int(seed >> 24);
+				image.setPixel(x, y, qRgba(v, v, v, 30));
+			}
+			return QBrush(image);
+		}();
+		p.setOpacity(grain == 1 ? 0.4 : 1.);
+		p.fillRect(clip, texture);
+	}
 }
 
 void SectionWidget::PaintBackground(

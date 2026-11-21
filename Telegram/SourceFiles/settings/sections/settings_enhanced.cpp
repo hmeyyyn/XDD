@@ -4,6 +4,8 @@ the unofficial app based on Telegram Desktop.
 For license and copyright information please follow this link:
 https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
 */
+#include "core/appearance.h"
+#include "settings/sections/settings_appearance.h"
 #include "base/unixtime.h"
 #include "main/main_session_settings.h"
 #include <base/timer_rpl.h>
@@ -88,7 +90,15 @@ public:
 				if (i->time < cutoff) continue;
 				empty = false;
 				const auto when = QLocale().toString(QDateTime::fromSecsSinceEpoch(i->time), QLocale::ShortFormat);
-				Ui::AddDividerText(entries, rpl::single(i->heading + u" · "_q + when + '\n' + i->text));
+				auto heading = i->heading;
+				const auto separator = u" · "_q;
+				const auto pos = heading.indexOf(separator);
+				const auto marker = Appearance::Get(Appearance::Key::Journal);
+				if (marker && pos >= 0) {
+					heading.remove(0, pos + separator.size());
+					if (marker == 1) heading.prepend(u"│ "_q);
+				}
+				Ui::AddDividerText(entries, rpl::single(heading + u" · "_q + when + '\n' + i->text));
 			}
 			if (empty) Ui::AddDividerText(entries, tr::lng_yg_journal_empty());
 		};
@@ -100,21 +110,10 @@ public:
 			});
 		page->add(object_ptr<Ui::VerticalLayout>::fromRaw(entries));
 		refresh();
+		Appearance::Changes() | rpl::on_next(refresh, lifetime());
 		Ui::ResizeFitChild(this, page);
 	}
 	rpl::producer<QString> title() override { return tr::lng_yg_journal(); }
-};
-
-class Customization final : public Section<Customization> {
-public:
-	Customization(QWidget *parent, not_null<Window::SessionController*> controller)
-	: Section(parent, controller) {
-		Ui::ResizeFitChild(this, Ui::CreateChild<Ui::VerticalLayout>(this));
-	}
-
-	rpl::producer<QString> title() override {
-		return tr::lng_settings_enhanced_customization();
-	}
 };
 
 struct DecodeEnhancedSettingsResult {
@@ -1205,7 +1204,7 @@ struct DecodeEnhancedSettingsResult {
 			page,
 			tr::lng_settings_enhanced_customization(),
 			st::settingsButtonNoIcon)->addClickHandler([=] {
-			showOther(Customization::Id());
+			showOther(AppearanceId());
 		});
 		setupMessages(AddEnhancedGroup(page, tr::lng_settings_messages()));
 		setupInterface(AddEnhancedGroup(page, tr::lng_settings_interface()));
@@ -1295,4 +1294,6 @@ struct DecodeEnhancedSettingsResult {
 		}
 		Section<Enhanced>::showFinished();
 	}
+Type MessageJournalId() { return MessageJournal::Id(); }
+
 } // namespace Settings

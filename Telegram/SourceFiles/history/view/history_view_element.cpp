@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/history_view_element.h"
 
 #include "bot_use/bot_use_sending.h"
@@ -2424,6 +2425,7 @@ void Element::refreshDataId() {
 }
 
 bool Element::computeIsAttachToPrevious(not_null<Element*> previous) {
+	if (Appearance::Get(Appearance::Key::Grouping) == 1) return false;
 	const auto mayBeAttached = [](not_null<Element*> view) {
 		const auto item = view->data();
 		return !item->isService()

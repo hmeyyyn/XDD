@@ -584,6 +584,9 @@ PRIVATE
     core/badge_keys.h
     core/chat_enhanced_settings.cpp
     core/chat_enhanced_settings.h
+    ui/chat/appearance_name_style.h
+    core/appearance.cpp
+    core/appearance.h
     core/client_badge.cpp
     core/client_badge.h
     core/changelogs.cpp
@@ -2005,6 +2008,8 @@ PRIVATE
     settings/sections/settings_credits.h
     settings/settings_credits_graphics.cpp
     settings/settings_credits_graphics.h
+    settings/sections/settings_appearance.h
+    settings/sections/settings_appearance.cpp
     settings/sections/settings_enhanced.cpp
     settings/sections/settings_enhanced.h
     settings/sections/settings_bot_use.cpp

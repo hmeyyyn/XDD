@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/history_view_bottom_info.h"
 
 #include "ui/chat/message_bubble.h"
@@ -176,7 +177,7 @@ TextState BottomInfo::textState(
 	}
 	const auto textWidth = _authorEditedDate.maxWidth();
 	auto withTicksWidth = textWidth;
-	if (_data.flags & (Data::Flag::OutLayout | Data::Flag::Sending)) {
+	if ((_data.flags & Data::Flag::Sending) || ((_data.flags & Data::Flag::OutLayout) && Appearance::Get(Appearance::Key::Meta) != 2)) {
 		withTicksWidth += st::historySendStateSpace;
 	}
 	if (!_views.isEmpty() || !_forwards.isEmpty()) {
@@ -298,7 +299,7 @@ void BottomInfo::paint(
 
 	auto right = position.x() + width();
 	const auto firstLineBottom = position.y() + st::msgDateFont->height;
-	if (_data.flags & Data::Flag::OutLayout) {
+	if ((_data.flags & Data::Flag::OutLayout) && (Appearance::Get(Appearance::Key::Meta) != 2 || (_data.flags & Data::Flag::Sending))) {
 		const auto &icon = (_data.flags & Data::Flag::Sending)
 			? (inverted
 				? st->historySendingInvertedIcon()
@@ -527,12 +528,13 @@ void BottomInfo::layoutDateText() {
 	const auto editedPrimary = !updated
 		&& (_data.flags & Data::Flag::EditedPrimary)
 		&& !(_data.flags & Data::Flag::ForwardedDate);
+	const auto marker = Appearance::Get(Appearance::Key::Journal);
 	const auto edited = editedPrimary
 		? QString()
 		: updated
 		? (tr::lng_ephemeral_updated(tr::now) + ' ')
 		: (_data.flags & Data::Flag::Edited)
-		? (tr::lng_edited(tr::now) + ' ')
+		? (marker == 2 ? QString() : marker == 1 ? u"│ "_q : (tr::lng_edited(tr::now) + ' '))
 		: (_data.flags & Data::Flag::EstimateDate)
 		? (tr::lng_approximate(tr::now) + ' ')
 		: _data.scheduleRepeatPeriod
@@ -547,6 +549,7 @@ void BottomInfo::layoutDateText() {
 		? Ui::FormatDateTimeSavedFrom(
 			_data.date,
 			EnhancedSettings::Get(EnhancedSettings::Option::ShowSeconds))
+		: Appearance::Get(Appearance::Key::Meta) == 1 ? _data.date.time().toString(u"HH:mm"_q)
 		: QLocale().toString(_data.date.time(), EnhancedSettings::Get(EnhancedSettings::Option::ShowSeconds)
 			? QLocale::system().timeFormat(QLocale::LongFormat).remove("t") 
 			: QLocale::system().timeFormat(QLocale::ShortFormat))) + _data.msgId;
@@ -649,7 +652,7 @@ QSize BottomInfo::countOptimalSize() {
 		return { st::historyShortcutStateSpace, st::msgDateFont->height };
 	}
 	auto width = 0;
-	if (_data.flags & (Data::Flag::OutLayout | Data::Flag::Sending)) {
+	if ((_data.flags & Data::Flag::Sending) || ((_data.flags & Data::Flag::OutLayout) && Appearance::Get(Appearance::Key::Meta) != 2)) {
 		width += st::historySendStateSpace;
 	}
 	width += _authorEditedDate.maxWidth();

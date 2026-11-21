@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "ui/widgets/chat_filters_tabs_slider.h"
 
 #include "ui/effects/ripple_animation.h"
@@ -270,6 +271,9 @@ void ChatsFiltersTabs::paintEvent(QPaintEvent *e) {
 		// 		0.,
 		// 		1.);
 		const auto active = (index == activeIndex) ? 1. : 0.;
+		if (active && Appearance::Get(Appearance::Key::FolderBar)) {
+			p.fillRect(shiftedLeft, height() - 2 * st::lineWidth, section.width, 2 * st::lineWidth, st::windowBgActive);
+		}
 		if (section.ripple) {
 			const auto color = anim::color(
 				_st.rippleBg,

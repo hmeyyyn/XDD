@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "dialogs/ui/dialogs_layout.h"
 
 #include "base/options.h"
@@ -90,11 +91,18 @@ void PaintRowTopRight(
 		QRect &rectForName,
 		const PaintContext &context,
 		int precomputedWidth = -1) {
-	const auto width = (precomputedWidth >= 0)
+	p.setFont(st::dialogsDateFont);
+	const auto family = Appearance::Family(Appearance::FontRole::Time);
+	if (!family.isEmpty()) {
+		auto font = p.font();
+		font.setFamily(family);
+		p.setFont(font);
+	}
+	const auto width = !family.isEmpty() ? p.fontMetrics().horizontalAdvance(text)
+		: (precomputedWidth >= 0)
 		? precomputedWidth
 		: st::dialogsDateFont->width(text);
 	rectForName.setWidth(rectForName.width() - width - st::dialogsDateSkip);
-	p.setFont(st::dialogsDateFont);
 	p.setPen(context.active
 		? st::dialogsDateFgActive
 		: context.selected
@@ -192,12 +200,14 @@ int PaintBadges(
 		icon.paint(p, right - icon.width(), top, context.width);
 		right -= icon.width() + st::dialogsUnreadPadding;
 	};
+	if (Appearance::Get(Appearance::Key::Unread) == 1) badgesState.unreadCounter = 0;
+	if (Appearance::Get(Appearance::Key::Unread) == 2 && !badgesState.mention) badgesState.unread = false;
 	auto initial = right;
 	auto painted = 0;
 	if (badgesState.unread
 		&& !badgesState.unreadCounter
-		&& context.st->unreadMarkDiameter > 0) {
-		const auto d = context.st->unreadMarkDiameter;
+		&& (context.st->unreadMarkDiameter > 0 || Appearance::Get(Appearance::Key::Unread) == 1)) {
+		const auto d = std::max(context.st->unreadMarkDiameter, 5 * st::lineWidth);
 		auto st = UnreadBadgeStyle();
 		auto hq = PainterHighQualityEnabler(p);
 		const auto rect = QRect(
@@ -234,7 +244,7 @@ int PaintBadges(
 		++painted;
 	} else if (const auto used = PaintRightButton(p, context)) {
 		return used - st::dialogsUnreadPadding;
-	} else if (displayPinnedIcon) {
+	} else if (displayPinnedIcon && !Appearance::Get(Appearance::Key::Pinned)) {
 		const auto &icon = ThreeStateIcon(
 			st::dialogsPinnedIcon,
 			context.active,
@@ -485,6 +495,13 @@ void PaintRow(
 		p.translate(swipeMirrored ? swipeTranslation : -swipeTranslation, 0);
 	}
 	p.fillRect(geometry, bg);
+	if (history) {
+		const auto color = Appearance::Mark(entry->session().uniqueId(), history->peer->id.value);
+		if (color.isValid()) p.fillRect(geometry.left(), geometry.top(), 3 * st::lineWidth, geometry.height(), color);
+	}
+	if (Appearance::Get(Appearance::Key::Pinned) == 1 && entry->isPinnedDialog(context.filter)) {
+		p.fillRect(geometry.left(), geometry.bottom(), geometry.width(), st::lineWidth, st::windowActiveTextFg);
+	}
 	if (!(flags & Flag::TopicJumpRipple)) {
 		auto ripple = context.active
 			? st::dialogsRippleBgActive
@@ -672,7 +689,7 @@ void PaintRow(
 		auto availableWidth = namewidth;
 		if (const auto used = PaintRightButton(p, context)) {
 			availableWidth -= used;
-		} else if (entry->isPinnedDialog(context.filter)
+		} else if (!Appearance::Get(Appearance::Key::Pinned) && entry->isPinnedDialog(context.filter)
 			&& (context.filter || !entry->fixedOnTopIndex())) {
 			auto &icon = ThreeStateIcon(
 				st::dialogsPinnedIcon,
@@ -770,7 +787,7 @@ void PaintRow(
 		auto availableWidth = namewidth;
 		if (const auto used = PaintRightButton(p, context)) {
 			availableWidth -= used;
-		} else if (entry->isPinnedDialog(context.filter)
+		} else if (!Appearance::Get(Appearance::Key::Pinned) && entry->isPinnedDialog(context.filter)
 			&& (context.filter || !entry->fixedOnTopIndex())) {
 			auto &icon = ThreeStateIcon(
 				st::dialogsPinnedIcon,
@@ -810,7 +827,7 @@ void PaintRow(
 		}
 
 		paintItemCallback(nameleft, namewidth);
-	} else if (entry->isPinnedDialog(context.filter)
+	} else if (!Appearance::Get(Appearance::Key::Pinned) && entry->isPinnedDialog(context.filter)
 		&& (context.filter || !entry->fixedOnTopIndex())) {
 		auto &icon = ThreeStateIcon(
 			st::dialogsPinnedIcon,
@@ -896,7 +913,7 @@ void PaintRow(
 				: &st::dialogsVerifiedIconBg),
 			.customEmojiRepaint = customEmojiRepaint,
 			.now = context.now,
-			.paused = context.paused,
+			.paused = context.paused || Appearance::Get(Appearance::Key::BadgeMotion),
 		});
 		rectForName.setWidth(rectForName.width() - badgeWidth);
 	};
@@ -1163,7 +1180,7 @@ void RowPainter::Paint(
 		const auto draftDate = cloudDraft ? cloudDraft->date : TimeId(0);
 		return std::max(itemDate, draftDate);
 	}();
-	const auto displayPinnedIcon = badgesState.empty()
+	const auto displayPinnedIcon = !Appearance::Get(Appearance::Key::Pinned) && badgesState.empty()
 		&& entry->isPinnedDialog(context.filter)
 		&& (context.filter || !entry->fixedOnTopIndex());
 
@@ -1243,7 +1260,11 @@ void RowPainter::Paint(
 			if (forum || monoforum) {
 				rect.setHeight(context.st->topicsHeight + rect.height());
 			}
-			view->paint(p, rect, context);
+			const auto preview = Appearance::Get(Appearance::Key::ListLines);
+			if (preview != 2 || forum || monoforum) {
+				if (preview == 1 && !forum && !monoforum && !context.st->tagTop) rect.setHeight(std::min(2 * rect.height(), context.st->height - rect.top()));
+				view->paint(p, rect, context);
+			}
 		}
 	};
 	PaintRow(

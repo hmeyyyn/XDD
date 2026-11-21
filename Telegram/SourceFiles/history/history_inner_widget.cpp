@@ -5,6 +5,8 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "settings/sections/settings_appearance.h"
+#include "core/appearance.h"
 #include "history/history_inner_widget.h"
 
 #include "api/api_polls.h"
@@ -3495,7 +3497,11 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 		}
 	};
 
-	const auto addReplyAction = [&](HistoryItem *item) {
+	const auto appendReply = [&](HistoryItem *item) {
+		if (item && (EnhancedSettings::Get(EnhancedSettings::Option::SaveEdits)
+			|| EnhancedSettings::Get(EnhancedSettings::Option::SaveDeleted))) {
+			_menu->addAction(tr::lng_yg_journal(tr::now), [=] { controller->showSettings(Settings::MessageJournalId()); });
+		}
 		if (!item
 			|| (!item->isRegular() && !CanReplyToEphemeral(item))
 			|| IsAnchoredEphemeral(item)) {
@@ -3566,6 +3572,11 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			&st::menuIconUnpin);
 	};
 
+	HistoryItem *deferredReply = nullptr;
+	const auto addReplyAction = [&](HistoryItem *item) {
+		if (Appearance::Get(Appearance::Key::Menu) == 2) deferredReply = item;
+		else appendReply(item);
+	};
 	const auto addTodoListAction = [&](HistoryItem *item) {
 		if (!item || !Window::PeerMenuShowAddTodoListTasks(item)) {
 			return;
@@ -3611,7 +3622,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			}
 			if (item && !Ui::SkipTranslate(selectedText.rich)) {
 				const auto peer = item->history()->peer;
-				_menu->addAction(tr::lng_context_translate_selected({}), [=] {
+				HistoryView::TranslationActionMenu(_menu)->addAction(tr::lng_context_translate_selected({}), [=] {
 					_controller->show(Box(
 						Ui::TranslateBox,
 						peer,
@@ -3944,7 +3955,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			}
 			if (item && !Ui::SkipTranslate(selectedText.rich)) {
 				const auto peer = item->history()->peer;
-				_menu->addAction(tr::lng_context_translate_selected({}), [=] {
+				HistoryView::TranslationActionMenu(_menu)->addAction(tr::lng_context_translate_selected({}), [=] {
 					_controller->show(Box(
 						Ui::TranslateBox,
 						peer,
@@ -4058,7 +4069,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 							: item->originalText();
 						if (!translate.text.isEmpty()
 							&& !Ui::SkipTranslate(translate)) {
-							_menu->addAction(tr::lng_context_translate(tr::now), [=] {
+							HistoryView::TranslationActionMenu(_menu)->addAction(tr::lng_context_translate(tr::now), [=] {
 								_controller->show(Box(
 									Ui::TranslateBox,
 									peer,
@@ -4381,6 +4392,8 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 			leaderOrSelf,
 			_controller);
 	}
+
+	if (deferredReply) appendReply(deferredReply);
 
 	if (!_menu->empty() && rateTranscriptionItem) {
 		_menu->insertAction(0, base::make_unique_q<Menu::RateTranscribe>(
@@ -6063,7 +6076,7 @@ void HistoryInner::mouseActionUpdate() {
 
 			// stop enumeration if we've found a date under the cursor
 			if (dateTop <= point.y()) {
-				auto opacity = (dateInPlace/* || noFloatingDate*/) ? 1. : scrollDateOpacity;
+				auto opacity = (dateInPlace && Appearance::Get(Appearance::Key::Dates) != 2) ? 1. : scrollDateOpacity;
 				if (opacity > 0.) {
 					const auto item = view->data();
 					auto dateWidth = 0;

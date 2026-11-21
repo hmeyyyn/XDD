@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "core/application.h"
 
 #include "data/data_abstract_structure.h"
@@ -599,6 +600,7 @@ void Application::startDomain() {
 
 void Application::startSettingsAndBackground() {
 	Local::rewriteSettingsIfNeeded();
+	Appearance::Start();
 	Window::Theme::Background()->start();
 	checkSystemDarkMode();
 	Ui::SetScreenReaderModeDisabled(

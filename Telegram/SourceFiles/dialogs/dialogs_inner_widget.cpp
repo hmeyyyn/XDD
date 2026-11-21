@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "dialogs/dialogs_inner_widget.h"
 
 #include "dialogs/dialogs_three_state_icon.h"
@@ -420,6 +421,7 @@ InnerWidget::InnerWidget(
 	Ui::ScheduleThanosEffectWarmUp(&session(), lifetime());
 
 	rpl::merge(
+		Appearance::Changes() | rpl::map_to(true),
 		session().settings().archiveCollapsedChanges() | rpl::map_to(false),
 		session().data().chatsFilters().changed() | rpl::map_to(true),
 		session().data().chatsFilters().tagsEnabledChanges(
@@ -1131,6 +1133,9 @@ void InnerWidget::paintEvent(QPaintEvent *e) {
 		}
 
 		context.st = (forum || monoforum) ? &st::forumDialogRow : _st.get();
+		if (!forum && !monoforum && history && !row->entry()->hasChatsFilterTags(context.filter)) {
+			context.st = &Row::ComputeSt(row->entry(), context.filter);
+		}
 
 		const auto videoUserpic = validateVideoUserpic(row);
 		const auto cacheRatio = style::DevicePixelRatio();
