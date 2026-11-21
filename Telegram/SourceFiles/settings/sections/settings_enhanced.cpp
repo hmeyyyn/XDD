@@ -155,7 +155,7 @@ struct DecodeEnhancedSettingsResult {
 [[maybe_unused]] const auto kEnhancedMeta = Builder::BuildHelper({
 	.id = Enhanced::Id(),
 	.parentId = MainId(),
-	.title = &tr::lng_settings_enhanced,
+	.title = &tr::lng_yanderegram_settings_title,
 	.icon = &st::menuIconManage,
 }, [](Builder::SectionBuilder &builder) {
 	builder.add(nullptr, [] {
@@ -1078,7 +1078,7 @@ struct DecodeEnhancedSettingsResult {
 	}
 
 	rpl::producer<QString> Enhanced::title() {
-		return tr::lng_settings_enhanced();
+		return tr::lng_yanderegram_settings_title();
 	}
 
 	void Enhanced::fillTopBarMenu(

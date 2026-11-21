@@ -13,6 +13,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_message_reaction_id.h"
 #include "ui/rect_part.h"
 
+#include <optional>
+
+namespace ClientBadge {
+enum class Role : uchar;
+} // namespace ClientBadge
+
 namespace Support {
 enum class SwitchSettings;
 } // namespace Support
@@ -34,6 +40,13 @@ public:
 	[[nodiscard]] QByteArray serialize() const;
 	void addFromSerialized(const QByteArray &serialized, int writerVersion);
 	void resetToDefaults();
+
+	[[nodiscard]] std::optional<ClientBadge::Role> ownClientBadge() const {
+		return _ownClientBadge;
+	}
+	void setOwnClientBadge(ClientBadge::Role role) {
+		_ownClientBadge = role;
+	}
 
 	void setSupportSwitch(Support::SwitchSettings value) {
 		_supportSwitch = value;
@@ -233,6 +246,7 @@ private:
 	bool _dialogsFiltersEnabled = false;
 	int _photoEditorHintShowsCount = 0;
 	int _disableSharingBoxShowsCount = 0;
+	std::optional<ClientBadge::Role> _ownClientBadge;
 	int _stashHintShowsCount = 0;
 	std::vector<TimeId> _mutePeriods;
 	TimeId _lastNonPremiumLimitDownload = 0;

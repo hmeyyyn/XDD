@@ -8,6 +8,8 @@
     "lng_shortcuts_edit_link_preview": "Add or edit link preview URL",
     "lng_shortcuts_choose_bot_use": "Choose BotUse identity",
 
+    "lng_yanderegram_settings_title": "YandereGram Settings",
+    "lng_client_badge_local_only": "Selection saved on this device. Telegram did not confirm the profile badge change.",
     "lng_settings_enhanced": "YandereGram",
     "lng_client_badge_choose": "My badge",
     "lng_client_badge_none": "None",

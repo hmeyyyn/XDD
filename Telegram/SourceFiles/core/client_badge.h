@@ -47,9 +47,6 @@ enum class Role : uchar {
 [[nodiscard]] Role RoleOfPeer(not_null<PeerData*> peer);
 [[nodiscard]] bool IsMarkedPeer(not_null<PeerData*> peer);
 
-// Keeps the own account marked for the whole session lifetime, re-applying
-// the mark after the user renames themselves.
-void Start(not_null<Main::Session*> session);
 void ChooseOwnRole(not_null<Main::Session*> session, Role role);
 
 // A tg://badge/... link carries a grant signed by the issuer key. Only the

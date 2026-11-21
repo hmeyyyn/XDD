@@ -151,6 +151,7 @@ private:
 	const not_null<UserData*> _user;
 	Info::Profile::EmojiStatusPanel _emojiStatusPanel;
 	Info::Profile::Badge _badge;
+	Info::Profile::Badge _clientMark;
 
 	object_ptr<Ui::UserpicButton> _userpic;
 	object_ptr<Ui::FlatLabel> _name = { nullptr };
@@ -184,6 +185,9 @@ Cover::Cover(
 	},
 	0, // customStatusLoopsLimit
 	Info::Profile::BadgeType::Premium)
+, _clientMark(
+	this, st::settingsCoverBadge, &user->session(),
+	Info::Profile::ClientMarkContentForPeer(user), nullptr, nullptr)
 , _userpic(
 	this,
 	controller,
@@ -246,7 +250,10 @@ Cover::Cover(
 			_badge.widget(),
 			_badge.sizeTag());
 	});
-	_badge.updated() | rpl::on_next([=] {
+	_clientMark.setPremiumClickCallback([=] {
+		ClientBadge::ShowRoleToast(this, ClientBadge::RoleOfPeer(_user));
+	});
+	rpl::merge(_badge.updated(), _clientMark.updated()) | rpl::on_next([=] {
 		refreshNameGeometry(width());
 	}, _name->lifetime());
 
@@ -341,15 +348,17 @@ void Cover::refreshNameGeometry(int newWidth) {
 		- nameLeft
 		- st::infoProfileCover.rightSkip
 		- qrButtonWidth;
-	if (const auto width = _badge.widget() ? _badge.widget()->width() : 0) {
-		nameWidth -= st::infoVerifiedCheckPosition.x() + width;
-	}
-	_name->resizeToNaturalWidth(nameWidth);
+	const auto premiumWidth = _badge.widget()
+		? st::infoVerifiedCheckPosition.x() + _badge.widget()->width()
+		: 0;
+	const auto markWidth = _clientMark.widget() ? _clientMark.widget()->width() : 0;
+	_name->resizeToNaturalWidth(std::max(0, nameWidth - premiumWidth - markWidth));
 	_name->moveToLeft(nameLeft, nameTop, newWidth);
 	const auto badgeLeft = nameLeft + _name->width();
 	const auto badgeTop = nameTop;
 	const auto badgeBottom = nameTop + _name->height();
 	_badge.move(badgeLeft, badgeTop, badgeBottom);
+	_clientMark.move(badgeLeft + premiumWidth, badgeTop, badgeBottom);
 }
 
 void Cover::updatePhoneText() {
@@ -506,7 +515,7 @@ void BuildSectionButtons(SectionBuilder &builder) {
 
 void BuildEnhancedSection(SectionBuilder &builder) {
 	builder.addSectionButton({
-		.title = tr::lng_settings_enhanced(),
+		.title = tr::lng_yanderegram_settings_title(),
 		.targetSection = EnhancedId(),
 		.icon = { &st::menuIconManage },
 		.keywords = { u"enhanced"_q },
