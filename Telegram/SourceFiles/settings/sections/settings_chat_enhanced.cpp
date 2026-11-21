@@ -222,6 +222,18 @@ rpl::producer<QString> DisableSyncDraftToCloudTitle() {
 	return tr::lng_settings_disable_sync_draft_to_cloud();
 }
 
+rpl::producer<QString> SaveDeletedTitle() {
+	return tr::lng_yg_save_deleted();
+}
+
+rpl::producer<QString> SaveEditsTitle() {
+	return tr::lng_yg_save_edits();
+}
+
+bool MessageJournalAvailable(not_null<PeerData*> peer) {
+	return peer->allowsForwarding();
+}
+
 bool ForceShowWebPagePreviewAvailable(not_null<PeerData*> peer) {
 	return !peer->isSelf();
 }
@@ -291,6 +303,18 @@ constexpr auto kFeatureDescriptors = std::array{
 		.group = Group::Behavior,
 		.title = DisableSyncDraftToCloudTitle,
 		.available = DraftSyncAvailable,
+	},
+	FeatureDescriptor{
+		.feature = Feature::SaveDeleted,
+		.group = Group::Messages,
+		.title = SaveDeletedTitle,
+		.available = MessageJournalAvailable,
+	},
+	FeatureDescriptor{
+		.feature = Feature::SaveEdits,
+		.group = Group::Messages,
+		.title = SaveEditsTitle,
+		.available = MessageJournalAvailable,
 	},
 };
 static_assert(
