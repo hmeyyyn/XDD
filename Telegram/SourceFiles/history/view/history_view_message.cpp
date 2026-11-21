@@ -5,6 +5,8 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "ui/chat/appearance_name_style.h"
+#include "core/appearance.h"
 #include "history/view/history_view_message.h"
 
 #include "api/api_suggest_post.h"
@@ -1951,6 +1953,9 @@ void Message::draw(Painter &p, const PaintContext &context) const {
 		p.translate(-reactionsPosition);
 	}
 
+	if (Appearance::Get(Appearance::Key::Grouping) == 2 && (isBubbleAttachedToPrevious() || isBubbleAttachedToNext())) {
+		p.fillRect(g.left() - 3 * st::lineWidth, g.top(), st::lineWidth, g.height(), st::windowActiveTextFg);
+	}
 	const auto messageRounding = countMessageRounding();
 	if (keyboard) {
 		const auto keyboardHeight = st::msgBotKbButton.margin + keyboard->naturalHeight();
@@ -1974,7 +1979,7 @@ void Message::draw(Painter &p, const PaintContext &context) const {
 	}
 	if (bubble) {
 		const auto from = displayFromName() ? displayFrom() : nullptr;
-		if (from && (_fromNameVersion < from->nameVersion())) {
+		if (from && (_fromNameVersion < from->nameVersion() || _fromNameFamily != Appearance::Family(Appearance::FontRole::Sender))) {
 			fromNameUpdated(g.width());
 		}
 		const auto simple = Ui::SimpleBubble{
@@ -5577,10 +5582,12 @@ void Message::validateFromNameText(PeerData *from) const {
 		return;
 	}
 	const auto version = from->nameVersion();
-	if (_fromNameVersion < version || EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode) != _previousMode) {
+	const auto family = Appearance::Family(Appearance::FontRole::Sender);
+	if (_fromNameFamily != family || _fromNameVersion < version || EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode) != _previousMode) {
 		_fromNameVersion = version;
+		_fromNameFamily = family;
 		_fromName.setText(
-			st::msgNameStyle,
+			Ui::AppearanceNameStyle(st::msgNameStyle, family),
 			from->name(),
 			Ui::NameTextOptions());
 	}
@@ -6706,7 +6713,7 @@ Ui::BubbleRounding Message::countMessageRounding() const {
 			&& !edges.infoBelow
 			&& (rich->article.edgeBlocks().bottom == Block::VisualMedia);
 	};
-	const auto skipTail = smallBottom
+	const auto skipTail = Appearance::Get(Appearance::Key::Tails) || smallBottom
 		|| (media && media->skipBubbleTail())
 		|| (rich && richMediaAtBottom())
 		|| (keyboard != nullptr)
@@ -6714,19 +6721,21 @@ Ui::BubbleRounding Message::countMessageRounding() const {
 		|| isCommentsRootView();
 	const auto right = hasRightLayout();
 	using Corner = Ui::BubbleCornerRounding;
+	const auto shape = Appearance::Get(item->out() ? Appearance::Key::OutCorners : Appearance::Key::InCorners);
+	const auto normal = shape == 1 ? Corner::Small : shape == 2 ? Corner::None : Corner::Large;
 	return Ui::BubbleRounding{
-		.topLeft = (smallTop && !right) ? Corner::Small : Corner::Large,
-		.topRight = (smallTop && right) ? Corner::Small : Corner::Large,
+		.topLeft = (smallTop && !right) ? Corner::Small : normal,
+		.topRight = (smallTop && right) ? Corner::Small : normal,
 		.bottomLeft = ((smallBottom && !right)
 			? Corner::Small
 			: (!skipTail && !right)
 			? Corner::Tail
-			: Corner::Large),
+			: normal),
 		.bottomRight = ((smallBottom && right)
 			? Corner::Small
 			: (!skipTail && right)
 			? Corner::Tail
-			: Corner::Large),
+			: normal),
 	};
 }
 
@@ -7016,6 +7025,9 @@ int Message::resizeContentGetHeight(int newWidth) {
 		keyboard->resize(contentWidth, keyboardHeight - st::msgBotKbButton.margin);
 	}
 
+	if (Appearance::Get(Appearance::Key::Meta) == 3 && bubble && !mediaDisplayed && hasVisibleText() && needInfoDisplay()) {
+		newHeight += st::msgDateFont->height;
+	}
 	newHeight += marginTop() + marginBottom();
 	return newHeight;
 }

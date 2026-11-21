@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "chat_helpers/tabbed_panel.h"
 
 #include "ui/widgets/shadow.h"
@@ -371,6 +372,7 @@ void TabbedPanel::startOpacityAnimation(bool hiding) {
 }
 
 void TabbedPanel::startShowAnimation() {
+	if (Appearance::Get(Appearance::Key::Panels)) { showChildren(); _selector->afterShown(); return; }
 	if (!_a_show.animating()) {
 		auto image = grabForAnimation();
 
@@ -422,6 +424,7 @@ QImage TabbedPanel::grabForAnimation() {
 }
 
 void TabbedPanel::hideAnimated() {
+	if (Appearance::Get(Appearance::Key::Panels)) { hideFast(); return; }
 	if (isHidden() || _hiding) {
 		return;
 	}

@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "platform/win/tray_win.h"
 
 #include "base/invoke_queued.h"
@@ -158,6 +159,7 @@ bool DarkTasbarValueValid/* = false*/;
 } // namespace
 
 Tray::Tray() {
+	Appearance::Changes() | rpl::on_next([=] { updateIcon(); }, _lifetime);
 }
 
 void Tray::createIcon() {
@@ -219,15 +221,20 @@ void Tray::updateIcon() {
 
 	// Force Qt to use right icon size, not the larger one.
 	QIcon forTrayIcon;
-	forTrayIcon.addPixmap(
-		Tray::IconWithCounter(
-			CounterLayerArgs(
-				GetSystemMetrics(SM_CXSMICON),
-				Core::App().unreadBadge(),
-				Core::App().unreadBadgeMuted()),
-			true,
-			Core::App().settings().trayIconMonochrome(),
-			session && session->supportMode()));
+	const auto variant = Appearance::Get(Appearance::Key::Tray);
+	const auto badge = Appearance::Get(Appearance::Key::TrayCount);
+	const auto count = Core::App().unreadBadge();
+	auto args = CounterLayerArgs(GetSystemMetrics(SM_CXSMICON), badge ? 0 : count, Core::App().unreadBadgeMuted());
+	const style::color color = args.bg;
+	auto image = ImageIconWithCounter(std::move(args), session && session->supportMode(), true,
+		variant ? variant == 2 : Core::App().settings().trayIconMonochrome());
+	if (variant == 3) {
+		auto painter = QPainter(&image);
+		painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+		painter.fillRect(image.rect(), IsDarkTaskbar().value_or(true) ? Qt::white : Qt::black);
+	}
+	if (badge == 1 && count) image = MonochromeWithDot(std::move(image), color);
+	forTrayIcon.addPixmap(Ui::PixmapFromImage(std::move(image)));
 	_icon->updateIcon(forTrayIcon);
 	_icon->updateToolTip(Core::TrayIconToolTip());
 }

@@ -5,6 +5,8 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "styles/style_menu_icons.h"
+#include "core/appearance.h"
 #include "history/history_widget.h"
 
 #include "api/api_compose_with_ai.h"
@@ -786,6 +788,49 @@ HistoryWidget::HistoryWidget(
 		}
 	}, lifetime());
 
+	const auto ghost = Ui::CreateChild<Ui::RpWidget>(this);
+	ghost->setAttribute(Qt::WA_TransparentForMouseEvents);
+	ghost->setAccessibleName(tr::lng_yg_ghost_mode(tr::now));
+	ghost->resize(st::menuIconYandereGram.size());
+	ghost->paintRequest() | rpl::on_next([=] {
+		QPainter p(ghost);
+		st::menuIconYandereGram.paint(p, 0, 0, ghost->width());
+	}, ghost->lifetime());
+	rpl::combine(_field->geometryValue(), _field->shownValue(),
+		EnhancedSettings::Watch(EnhancedSettings::Option::GhostMode),
+		rpl::single() | rpl::then(Appearance::Changes())
+	) | rpl::on_next([=](QRect field, bool shown, bool enabled, auto) {
+		ghost->setVisible(shown && enabled && Appearance::Get(Appearance::Key::Ghost));
+		ghost->move(layoutDirection() == Qt::RightToLeft ? field.right() + 1 : field.x() - ghost->width(), field.bottom() - ghost->height());
+	}, ghost->lifetime());
+	const auto layoutOptions = [] {
+		using K = Appearance::Key;
+		return std::array{ Appearance::Get(K::Meta), Appearance::Get(K::Grouping),
+			Appearance::Get(K::Journal), Appearance::Get(K::QuoteLines) };
+	};
+	Appearance::Changes() | rpl::map(layoutOptions) | rpl::distinct_until_changed()
+		| rpl::on_next([=] {
+		// Refresh from ids: rebuilding one view invalidates block iterators.
+		std::vector<FullMsgId> ids;
+		for (const auto history : { _migrated, _history }) {
+			if (!history) continue;
+			for (const auto &block : history->blocks) {
+				for (const auto &view : block->messages) ids.push_back(view->data()->fullId());
+			}
+		}
+		for (const auto id : ids) {
+			if (const auto item = session().data().message(id)) session().data().requestItemViewRefresh(item);
+		}
+	}, lifetime());
+	Appearance::Changes() | rpl::on_next([=] {
+		updateControlsVisibility();
+		updateControlsGeometry();
+		updateFieldPlaceholder();
+	}, lifetime());
+	EnhancedSettings::Changes(EnhancedSettings::Option::GhostMode) | rpl::on_next([=] {
+		updateControlsGeometry();
+		updateFieldSize();
+	}, lifetime());
 	session().data().itemShowHighlightRequest(
 	) | rpl::on_next([=](not_null<HistoryItem*> item) {
 		const auto history = item->history();
@@ -3726,7 +3771,12 @@ void HistoryWidget::showHistory(
 		if (_history->scrollTopItem
 			|| (_migrated && _migrated->scrollTopItem)
 			|| _history->isReadyFor(_showAtMsgId)) {
+			const auto anchor = _history->scrollTopItem;
+			const auto id = anchor ? anchor->data()->fullId() : FullMsgId();
 			historyLoaded();
+			if (id && Appearance::Get(Appearance::Key::Cursor)) {
+				if (const auto item = session().data().message(id)) enqueueMessageHighlight({ item });
+			}
 		} else {
 			firstLoadMessages();
 			doneShow();
@@ -4711,13 +4761,13 @@ void HistoryWidget::updateControlsVisibility() {
 			_botCommandStart->hide();
 		} else if (_kbReplyTo) {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 			_botKeyboardHide->hide();
 			_botKeyboardShow->hide();
 			_botCommandStart->hide();
 		} else {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 			_botKeyboardHide->hide();
 			if (_keyboard->hasMarkup()) {
 				_botKeyboardShow->show();
@@ -7733,7 +7783,7 @@ void HistoryWidget::toggleKeyboard(bool manual) {
 	if (_botKeyboardHide->isHidden()
 		&& canWriteMessage()
 		&& !_showAnimation) {
-		_tabbedSelectorToggle->show();
+		_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 	} else {
 		_tabbedSelectorToggle->hide();
 	}
@@ -8081,6 +8131,7 @@ void HistoryWidget::moveFieldControls() {
 		_sendAs->moveToLeft(left, buttonsBottom);
 		left += _sendAs->width();
 	}
+	if (Appearance::Get(Appearance::Key::Ghost) && EnhancedSettings::Get(EnhancedSettings::Option::GhostMode)) left += st::menuIconYandereGram.width();
 	const auto fieldTop = bottom - fieldHeight() - st::historySendPadding;
 	_field->moveToLeft(left, fieldTop);
 	_richDraftPreview->moveToLeft(left, fieldTop);
@@ -8094,7 +8145,7 @@ void HistoryWidget::moveFieldControls() {
 	_voiceRecordBar->moveToLeft(0, bottom - _voiceRecordBar->height());
 	_tabbedSelectorToggle->moveToRight(right, buttonsBottom);
 	_botKeyboardHide->moveToRight(right, buttonsBottom);
-	right += _botKeyboardHide->width();
+	if (!Appearance::Get(Appearance::Key::Composer) || !_botKeyboardHide->isHidden()) right += _botKeyboardHide->width();
 	_botKeyboardShow->moveToRight(right, buttonsBottom);
 	_botCommandStart->moveToRight(right, buttonsBottom);
 	if (_silent) {
@@ -8175,10 +8226,11 @@ void HistoryWidget::moveFieldControls() {
 void HistoryWidget::updateFieldSize() {
 	const auto kbShowShown = _history && !_kbShown && _keyboard->hasMarkup();
 	auto fieldWidth = width()
+		- ((Appearance::Get(Appearance::Key::Ghost) && EnhancedSettings::Get(EnhancedSettings::Option::GhostMode)) ? st::menuIconYandereGram.width() : 0)
 		- _attachToggle->width()
 		- st::historySendRight
 		- _send->width()
-		- _tabbedSelectorToggle->width();
+		- (Appearance::Get(Appearance::Key::Composer) && _botKeyboardHide->isHidden() ? 0 : _tabbedSelectorToggle->width());
 	if (_botMenu) {
 		fieldWidth -= st::historyBotMenuSkip + _botMenu->width();
 	}
@@ -9600,7 +9652,7 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 					showKeyboardHideButton();
 				} else {
 					_kbScroll->hide();
-					_tabbedSelectorToggle->show();
+					_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 					_botKeyboardHide->hide();
 				}
 				_botKeyboardShow->hide();
@@ -9624,7 +9676,7 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 		} else {
 			if (!_showAnimation) {
 				_kbScroll->hide();
-				_tabbedSelectorToggle->show();
+				_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 				_botKeyboardHide->hide();
 				_botKeyboardShow->show();
 				_botCommandStart->hide();
@@ -9643,7 +9695,7 @@ void HistoryWidget::updateBotKeyboard(History *h, bool force) {
 	} else {
 		if (!_scroll->isHidden()) {
 			_kbScroll->hide();
-			_tabbedSelectorToggle->show();
+			_tabbedSelectorToggle->setVisible(!Appearance::Get(Appearance::Key::Composer));
 			_botKeyboardHide->hide();
 			_botKeyboardShow->hide();
 			_botCommandStart->setVisible(!_editMsgId);

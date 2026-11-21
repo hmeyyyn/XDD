@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/history_view_list_widget.h"
 
 #include "bot_use/bot_use_sending.h"
@@ -3881,7 +3882,7 @@ void ListWidget::paintDates(
 
 		// paint the date if it intersects the painted rect
 		if (dateTop < clip.top() + clip.height()) {
-			auto opacity = (dateInPlace/* || noFloatingDate*/) ? 1. : scrollDateOpacity;
+			auto opacity = (dateInPlace && Appearance::Get(Appearance::Key::Dates) != 2) ? 1. : scrollDateOpacity;
 			if (opacity > 0.) {
 				p.setOpacity(opacity);
 				int dateY = /*noFloatingDate ? itemtop :*/ (dateTop - st::msgServiceMargin.top());

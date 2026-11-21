@@ -101,6 +101,22 @@ defaultDialogRow: DialogRow {
 	textLeft: 68px;
 	textTop: 34px;
 }
+compactDialogRow: DialogRow(defaultDialogRow) {
+	height: 50px;
+	photoSize: 36px;
+	nameTop: 4px;
+	textTop: 25px;
+	nameLeft: 58px;
+	textLeft: 58px;
+}
+spaciousDialogRow: DialogRow(defaultDialogRow) {
+	height: 74px;
+	photoSize: 54px;
+	nameTop: 12px;
+	textTop: 40px;
+	nameLeft: 76px;
+	textLeft: 76px;
+}
 communityRequestableListItem: PeerListItem(defaultPeerListItem) {
 	height: dialogsRowHeight;            // == st::defaultDialogRow.height (62px)
 	photoSize: 46px;                     // == st::defaultDialogRow.photoSize

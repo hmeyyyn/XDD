@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/reactions/history_view_reactions.h"
 
 #include "bot_use/bot_use_sending.h"
@@ -824,6 +825,7 @@ void InlineList::clickHandlerPressedChanged(
 void InlineList::animate(
 		Ui::ReactionFlyAnimationArgs &&args,
 		Fn<void()> repaint) {
+	if (Appearance::Get(Appearance::Key::Reactions)) return;
 	const auto i = ranges::find(_buttons, args.id, &Button::id);
 	if (i == end(_buttons)) {
 		return;

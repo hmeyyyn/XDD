@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "history/view/media/history_view_document.h"
 
 #include "base/random.h"
@@ -259,6 +260,15 @@ void PaintWaveform(
 	// Rescale waveform by going in waveform.size * bar_count 1D grid.
 	const auto active = stm->msgWaveformActive;
 	const auto inactive = ttl ? stm->msgBg : stm->msgWaveformInactive;
+	const auto mode = Appearance::Get(Appearance::Key::Voice);
+	if (mode && !ttl) {
+		if (mode == 1) {
+			const auto y = st::msgWaveformMax / 2;
+			p.fillRect(0, y, availableWidth, 2 * st::lineWidth, inactive);
+			p.fillRect(0, y, base::SafeRound(availableWidth * progress), 2 * st::lineWidth, active);
+		}
+		return;
+	}
 	const auto wfSize = wf
 		? int(wf->size())
 		: ::Media::Player::kWaveformSamplesCount;

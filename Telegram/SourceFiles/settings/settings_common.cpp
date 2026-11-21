@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/appearance.h"
 #include "settings/settings_common.h"
 
 #include "base/timer.h"
@@ -333,6 +334,15 @@ AbstractSection::AbstractSection(
 	QWidget *parent,
 	not_null<Window::SessionController*> controller)
 : _controller(controller) {
+	const auto tint = [=] {
+		const auto color = Appearance::Color(Appearance::Tint::SettingsBg);
+		setAutoFillBackground(color.isValid());
+		auto pal = QPalette();
+		if (color.isValid()) pal.setColor(QPalette::Window, color);
+		setPalette(pal);
+	};
+	tint();
+	Appearance::Changes() | rpl::on_next(tint, lifetime());
 }
 
 AbstractSection::~AbstractSection() = default;

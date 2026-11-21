@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "ui/chat/appearance_name_style.h"
 #include "history/view/history_view_top_bar_widget.h"
 
 #include "history/history.h"
@@ -690,10 +691,12 @@ void TopBarWidget::paintTopBar(Painter &p) {
 			paintStatus(p, statusleft, statustop, statuswidth, width());
 		}
 	} else if (namePeer) {
-		if (_titleNameVersion < namePeer->nameVersion()) {
+		const auto family = Appearance::Family(Appearance::FontRole::Title);
+		if (_titleFamily != family || _titleNameVersion < namePeer->nameVersion()) {
+			_titleFamily = family;
 			_titleNameVersion = namePeer->nameVersion();
 			_title.setText(
-				st::msgNameStyle,
+				Ui::AppearanceNameStyle(st::msgNameStyle, family),
 				TopBarNameText(namePeer, _activeChat),
 				Ui::NameTextOptions());
 		}

@@ -5,6 +5,8 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "settings/sections/settings_appearance.h"
+#include "core/appearance.h"
 #include "history/view/history_view_context_menu.h"
 
 #include "api/api_attached_stickers.h"
@@ -2199,7 +2201,14 @@ void FillContextMenuItems(
 	const auto hasWhoReactedItem = item
 		&& Api::WhoReactedExists(item, Api::WhoReactedList::All);
 
-	AddReplyToMessageAction(result, request, list);
+	const auto replyLast = Appearance::Get(Appearance::Key::Menu) == 2;
+	if (!replyLast) AddReplyToMessageAction(result, request, list);
+	if (item && (EnhancedSettings::Get(EnhancedSettings::Option::SaveEdits)
+		|| EnhancedSettings::Get(EnhancedSettings::Option::SaveDeleted))) {
+		result->addAction(tr::lng_yg_journal(tr::now), [controller = list->controller()] {
+			controller->showSettings(Settings::MessageJournalId());
+		});
+	}
 	if (item) {
 		const auto media = item->media();
 		const auto document = media ? media->document() : nullptr;
@@ -2253,7 +2262,7 @@ void FillContextMenuItems(
 		&& view
 		&& !Ui::SkipTranslate(list->getSelectedText().rich)) {
 		const auto owner = &view->history()->owner();
-		result->addAction(tr::lng_context_translate_selected(tr::now), [=] {
+		TranslationActionMenu(result)->addAction(tr::lng_context_translate_selected(tr::now), [=] {
 			if (const auto item = owner->message(itemId)) {
 				list->controller()->show(Box(
 					Ui::TranslateBox,
@@ -2335,7 +2344,7 @@ void FillContextMenuItems(
 			if ((!item->translation() || !item->history()->translatedTo())
 				&& !translate.text.isEmpty()
 				&& !Ui::SkipTranslate(translate)) {
-				result->addAction(tr::lng_context_translate(tr::now), [=] {
+				TranslationActionMenu(result)->addAction(tr::lng_context_translate(tr::now), [=] {
 					if (const auto item = owner->message(itemId)) {
 						list->controller()->show(Box(
 							Ui::TranslateBox,
@@ -2353,6 +2362,7 @@ void FillContextMenuItems(
 
 	AddCopyLinkAction(result, link);
 	AddMessageActions(result, request, list);
+	if (replyLast) AddReplyToMessageAction(result, request, list);
 
 	const auto wasAmount = result->actions().size();
 	if (const auto textItem = view ? view->textItem() : item) {
@@ -2376,6 +2386,14 @@ void FillContextMenuItems(
 				list->controller());
 		}
 	}
+}
+
+not_null<Ui::PopupMenu*> TranslationActionMenu(not_null<Ui::PopupMenu*> menu) {
+	if (Appearance::Get(Appearance::Key::Menu) != 1) return menu;
+	auto sub = std::make_unique<Ui::PopupMenu>(menu, st::popupMenuWithIcons);
+	const auto result = sub.get();
+	menu->addAction(tr::lng_profile_action_short_more(tr::now), std::move(sub));
+	return result;
 }
 
 base::unique_qptr<Ui::PopupMenu> FillContextMenu(

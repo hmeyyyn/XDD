@@ -227,6 +227,7 @@ private:
 	rpl::lifetime _activeChatLifetime;
 
 	Ui::PeerBadge _titleBadge;
+	QString _titleFamily;
 	Ui::Text::String _title;
 	int _titleNameVersion = 0;
 
