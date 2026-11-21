@@ -4,6 +4,7 @@ the unofficial app based on Telegram Desktop.
 For license and copyright information please follow this link:
 https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
 */
+#include "lang/lang_tag.h"
 #include "core/enhanced_settings.h"
 
 #include "apiwrap.h"
@@ -186,6 +187,12 @@ Descriptor Integer(
 			return &tr::lng_settings_hide_gram_balance_desc;
 		case OptionId::ShowPeerInfo:
 			return &tr::lng_settings_show_peer_info_desc;
+		case OptionId::SaveDeleted:
+		case OptionId::SaveEdits:
+		case OptionId::GhostMode:
+		case OptionId::ExactCounts:
+		case OptionId::RelativeOnline:
+		case OptionId::ExtendedStickers:
 		case OptionId::Count:
 			break;
 	} // switch
@@ -414,6 +421,18 @@ const DescriptorList &DescriptorData() {
 			"enhanced/hide-gram-balance"),
 		Bool(OptionId::ShowPeerInfo, "show_peer_info",
 			&tr::lng_settings_show_peer_info, "enhanced/show-peer-info"),
+		Bool(OptionId::SaveDeleted, "save_deleted",
+			&tr::lng_yg_save_deleted, "enhanced/save-deleted"),
+		Bool(OptionId::SaveEdits, "save_edits",
+			&tr::lng_yg_save_edits, "enhanced/save-edits"),
+		Bool(OptionId::GhostMode, "ghost_mode",
+			&tr::lng_yg_ghost_mode, "enhanced/ghost-mode"),
+		Bool(OptionId::ExactCounts, "exact_counts",
+			&tr::lng_yg_exact_counts, "enhanced/exact-counts"),
+		Bool(OptionId::RelativeOnline, "relative_online",
+			&tr::lng_yg_relative_online, "enhanced/relative-online"),
+		Bool(OptionId::ExtendedStickers, "extended_stickers",
+			&tr::lng_yg_extended_stickers, "enhanced/extended-stickers"),
 	});
 	return result;
 }
@@ -625,6 +644,13 @@ public:
 			cSetEnhancedFirstRun(true);
 			writeCurrentSettings();
 		}
+		const auto syncCounts = [=] {
+			Lang::SetExactCounts(std::get<bool>(get(OptionId::ExactCounts)));
+		};
+		syncCounts();
+		changes() | rpl::on_next([=](OptionId id) {
+			if (id == OptionId::ExactCounts) syncCounts();
+		}, _formatLifetime);
 		readBlocklist();
 	}
 
@@ -886,6 +912,7 @@ private:
 	mtpRequestId _blocklistRequestId = 0;
 	QList<int64> _fetchedBlocklist;
 	int _blocklistCount = 0;
+	rpl::lifetime _formatLifetime;
 	bool _started = false;
 };
 

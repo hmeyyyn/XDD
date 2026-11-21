@@ -121,6 +121,16 @@ constexpr auto kChatFeatureDescriptors = std::array{
 		.storageKey = "disable_sync_draft_to_cloud",
 		.globalValue = Option::DisableSyncDraftToCloud,
 	},
+	ChatFeatureDescriptor{
+		.feature = ChatFeature::SaveDeleted,
+		.storageKey = "save_deleted",
+		.globalValue = Option::SaveDeleted,
+	},
+	ChatFeatureDescriptor{
+		.feature = ChatFeature::SaveEdits,
+		.storageKey = "save_edits",
+		.globalValue = Option::SaveEdits,
+	},
 };
 static_assert(
 	kChatFeatureDescriptors.size()

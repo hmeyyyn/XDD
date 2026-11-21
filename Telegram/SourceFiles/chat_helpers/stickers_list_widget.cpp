@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/enhanced_settings.h"
 #include "chat_helpers/stickers_list_widget.h"
 
 #include "base/options.h"
@@ -253,6 +254,8 @@ StickersListWidget::StickersListWidget(
 	&session(),
 	st::stickersPremiumLock))
 , _searchRequestTimer([=] { sendSearchRequest(); }) {
+	EnhancedSettings::Changes(EnhancedSettings::Option::ExtendedStickers)
+		| rpl::on_next([=] { refreshRecentStickers(); }, lifetime());
 	setMouseTracking(true);
 	if (st().bg->c.alpha() > 0) {
 		setAttribute(Qt::WA_OpaquePaintEvent);
@@ -3447,19 +3450,16 @@ auto StickersListWidget::collectRecentStickers() -> std::vector<Sticker> {
 	result.reserve(cloudCount + recent.size() + customCount);
 	_custom.reserve(cloudCount + recent.size() + customCount);
 
+	const auto unlimited = OptionUnlimitedRecentStickers.value()
+		|| EnhancedSettings::Get(EnhancedSettings::Option::ExtendedStickers);
+	auto indices = QHash<DocumentData*, int>();
 	auto add = [&](not_null<DocumentData*> document, bool custom) {
-		if (result.size() >= kRecentDisplayLimit
-			&& !OptionUnlimitedRecentStickers.value()) {
-			return;
-		}
-		const auto i = ranges::find(result, document, &Sticker::document);
-		if (i != end(result)) {
-			const auto index = (i - begin(result));
-			if (index >= cloudCount && custom) {
-				// Mark stickers from local recent as custom.
-				_custom[index] = true;
-			}
+		if (!unlimited && result.size() >= kRecentDisplayLimit) return;
+		const auto i = indices.constFind(document.get());
+		if (i != indices.cend()) {
+			if (i.value() >= cloudCount && custom) _custom[i.value()] = true;
 		} else if (!_favedStickersMap.contains(document)) {
+			indices.insert(document.get(), int(result.size()));
 			result.push_back(Sticker{
 				document
 			});

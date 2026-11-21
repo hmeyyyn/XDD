@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Founder — проверка у имени</title>
+<style>
+:root{color-scheme:dark;font:14px/1.4 'Segoe UI',system-ui,sans-serif;color:#eceee6;background:#10120e}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px}main{width:min(100%,455px);border:1px solid #35392e;border-radius:9px;background:#1b1e17;overflow:hidden}header,section{padding:15px 19px}header{border-bottom:1px solid #35392e}h1{font-size:17px;margin:0;font-weight:600}p{color:#b6baae;margin:4px 0 0;font-size:13px}section+section{border-top:1px solid #35392e}h2{font-size:12px;color:#a9b99e;font-weight:500;margin:0 0 9px}.name{font-weight:600;display:flex;align-items:center;gap:4px;width:max-content}.mark{width:23px;height:19px;color:#c5cabb;overflow:visible}.defs{position:absolute;width:0;height:0;overflow:hidden}details{margin-top:12px}summary{width:max-content;color:#adb5a6;cursor:pointer;font-size:12px}summary:focus-visible{outline:2px solid currentColor}details .mark{width:92px;height:76px;display:block;margin:14px 0 3px}
+
+figure{margin:12px 0 0;display:grid;place-items:center;background:#171a14;border-radius:6px;padding:19px}.large{width:138px;height:114px}.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}.controls small{color:#a7ad9e}button{font:inherit;font-size:13px;color:#c8d5ba;background:#292f23;border:1px solid #434a3a;padding:6px 10px;border-radius:5px;cursor:pointer}button:focus-visible{outline:2px solid #abc897}
+@media(prefers-reduced-motion:no-preference){.eyes{transform-origin:8px 10.7px;animation:blink 5.9s linear infinite}.ear{transform-origin:12px 7px;animation:flick 8.1s ease-in-out infinite}.turn{transform-origin:0 0;animation:knife-roll 8.1s ease-in-out infinite}.glint{animation:glint 8.1s linear infinite}.restart .mark *{animation:none!important}}
+@media(prefers-reduced-motion:reduce){#replay{display:none}}
+@keyframes blink{0%,5%,9%,78%,82%,100%{transform:scaleY(1)}7%,80%{transform:scaleY(.18)}}
+@keyframes flick{0%,10%,20%,100%{transform:rotate(0)}14%{transform:rotate(9deg)}}
+/* A wrist roll about the grip rather than a flat revolution over the face. */
+@keyframes knife-roll{
+  0%,9%,30%,100%{transform:rotate(0) scaleX(1)}
+  13%{transform:rotate(-8deg) scaleX(.96)}
+  18%{transform:rotate(21deg) scaleX(.4)}
+  21%{transform:rotate(24deg) scaleX(.45)}
+  26%{transform:rotate(-3deg) scaleX(.98)}
+}
+@keyframes glint{0%,21%,27%,100%{opacity:0}24%{opacity:.95}}
+
+.mark{--paper:#191919;color:#dedede}.graphite{display:none}.large .graphite{display:inline}.large{--paper:#e5e5e5;color:#222;width:175px;height:147px}figure{background:#e5e5e5;margin:18px 0 0;padding:21px;border-radius:2px}
+.micro{width:23px;height:19px;color:#c8cbbb}.micro .eyes{transform-origin:8px 10px}.micro .ear{transform-origin:12px 6px}details.study{margin:16px 0}details.study figure{margin:8px 0 0}details.study .large{width:175px;height:147px;margin:0}
+</style>
+<main><header><h1>Founder</h1><p>Карандашный эскиз · анфас</p> <a href="founder-study.html" download="founder-study.html" style="color:#abc897;font-size:13px">Скачать HTML-файл</a></header><section><div class="name">Kloshy | Deepseek r1 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 19" width="23" height="19" class="mark micro" role="img" aria-label="Founder">
+<!-- Optical cut for a name line: each contour, gap and eye is at least a pixel at rest. -->
+<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke-width="1.55" d="M13.8 8.6c1.7 3.9-.6 7.1-5.7 7.1-4.5 0-7-2.2-6.6-5.6.1-.9.5-1.8 1-2.5l-.3-4.8L6.8 5q2.4-.6 4.3 0"/>
+  <path class="ear" stroke-width="1.55" d="M10.7 5.2 13.5 3l1.3 3.4-2.1.6"/>
+  <g class="eyes" stroke="none" fill="currentColor"><path d="M4.5 8.7 7 9q0 2.2-1.3 2.1-1.2-.1-1.2-2.4Z"/><ellipse cx="10.8" cy="9.9" rx="1.05" ry="1.25"/></g>
+  <path stroke-width="1.05" d="M7 12.5q1.5 1 2.9-.5"/>
+  <g transform="translate(18.9 12.9)"><g transform="rotate(14)"><g class="turn">
+    <path fill="currentColor" stroke="none" d="M-1-3.5v-2.2l2-1.8v4Z"/><path class="glint" opacity="0" stroke="#fff" stroke-width=".7" d="m-.75-5.6 1.5-1.35"/><rect x="-1.35" y="-2.5" width="2.7" height="6.2" rx=".6" stroke-width="1.25"/>
+  </g></g></g>
+  <path stroke-width="1.6" d="M12.3 15.1q2.4 1.8 4.8-.4l1.7-1.4"/>
+</g></svg></div><details class="study"><summary>Карандашный эскиз крупно</summary><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 21" class="mark large" aria-label="Котёнок Founder" role="img" style="vertical-align:middle"><g fill="none" stroke="currentColor" stroke-linejoin="round" stroke-linecap="round">
+<!-- The cheek line breaks like a lifted pencil; the heavy edge is a tapered stroke. -->
+<path fill="currentColor" stroke="none" d="M2.8 9.1 1.7 2.4Q4.4 3.1 6.8 5.5q2.7-.9 4.8-.2l-.6.9q-2.7-.3-4.8.8L3.2 4.6l.5 4.5Q1 13.2 4.5 15.5q3.1 2 7.6.3-4.2 3.4-8.5.9Q-.7 14 2.8 9.1Z"/>
+<g class="ear"><path stroke-width="1.2" d="M10.8 6.2q.9-2 2.7-3.1l2.1 3.5-2.4 1.1-1.5-1.6"/><path stroke-width=".55" d="m13.3 4.5 1.1 1.7-1 .5"/></g>
+<path stroke-width="1.1" d="m14.8 8.6.8 1.8-.6-.2q1.3 2.6-1 5"/>
+<path fill="currentColor" stroke="none" d="m2.9 8.4 3.5.5 2.9-.9-.8.9 3.4-1.1-3.8 2.3.1-.8-2.1.7z"/>
+<g class="eyes" fill="currentColor" stroke="none"><path d="M5 10.3q1.5-.7 1.8.5.2 1.4-.9 1.6-1.1-.1-.9-2.1Z"/><path d="M11 12.2q-1.9-1.3-1.7-2.2.4-1.1 1.6-.3 1.4-1 1.7.2.1.9-1.6 2.3Z"/></g>
+<path stroke-width=".78" d="M6.8 13.8q1.9 1 3.9-1.2m-1 1.1.6.3"/>
+<g class="graphite" opacity=".66" stroke-width=".18"><path d="m2.1 3.8.3 3.1m.3-2.8.4 3m.8 7.9q2.2 2 4.1 1.9m-3.9-2.4 1.3 1.1m-.4-1.2 1.2 1m-.2-1 .9.6m6.3-5.9.5-1.4m.1 1.7.4-1.3M3.2 12.3l1 .3m-1.4.2 1.3.3"/></g>
+<!-- Short foreleg, taper at the wrist and a separate hooked paw in front of the grip. -->
+<path fill="var(--paper)" stroke-width="1.05" d="M12.3 16.2q1.2 1 2.7.4l2.5-2 .9 1.4-2.8 2.4q-2.7 1.9-5.1-.1"/>
+<g transform="translate(19.8 14)"><g transform="rotate(13)"><g class="turn">
+<path fill="#ccc" stroke="#353535" stroke-width=".42" d="M-.93-3.6v-2.65l2-2v4.65Z"/><path stroke="#666" stroke-width=".4" d="m-.85-4.8 1.7-1.55"/>
+<path fill="#282828" stroke="#c8c8c8" stroke-width=".8" d="m-1.4-4.2 2.7-.1.25 7.6-.55.9-2.2.05-.3-.75Z"/><path stroke="#919191" stroke-width=".38" d="M.6-3.4.8 2.8"/><path stroke="#eee" stroke-width=".9" d="m.2-2.9.04 1.3"/>
+<path class="glint" opacity="0" stroke="white" stroke-width=".6" d="m-.6-5.7 1.45-1.4"/></g></g></g>
+<path fill="var(--paper)" stroke-width=".95" d="M16.9 14.7q.25-1.35 1.35-1.9l.8-.95q.55-.53 1.03.08l.18.4q.9-.52 1.27.19.45.75-.13 1.23.45.7-.22 1.36l-1.06.88q-.95.8-2.12.46l-.7.45"/>
+<path stroke-width=".55" d="m18.3 13.4 1.2-1m.06 1.9 1.3-1m-1.13 2.08 1.1-.85"/>
+<path class="graphite" opacity=".65" stroke-width=".21" d="m12.2 17.5 1.4.7m-.4-1 1.1.6m-.1-.95 1.05.65m1.3-1.75.45.59m.12-1 .44.52"/>
+</g></svg></figure></details><div class="controls"><small>У имени — 19 px</small><button id="replay">Повторить движение</button></div></section></main>
+<script>
+document.getElementById('replay').onclick=()=>{const root=document.querySelector('main');root.classList.add('restart');void root.offsetWidth;root.classList.remove('restart')};
+</script></html>

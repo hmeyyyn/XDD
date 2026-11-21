@@ -33,6 +33,12 @@ enum class SetupEmailState;
 
 namespace Main {
 
+struct JournalEntry {
+	qint64 time = 0;
+	QString heading;
+	QString text;
+};
+
 class SessionSettings final {
 public:
 	SessionSettings();
@@ -40,6 +46,11 @@ public:
 	[[nodiscard]] QByteArray serialize() const;
 	void addFromSerialized(const QByteArray &serialized, int writerVersion);
 	void resetToDefaults();
+	static constexpr auto kJournalLimit = 200;
+	static constexpr auto kJournalLifetime = 7 * 24 * 3600;
+	void appendJournalEntry(JournalEntry entry);
+	[[nodiscard]] const std::vector<JournalEntry> &journal() const { return _journal; }
+	void clearJournal() { _journal.clear(); }
 
 	[[nodiscard]] std::optional<ClientBadge::Role> ownClientBadge() const {
 		return _ownClientBadge;
@@ -246,6 +257,7 @@ private:
 	bool _dialogsFiltersEnabled = false;
 	int _photoEditorHintShowsCount = 0;
 	int _disableSharingBoxShowsCount = 0;
+	std::vector<JournalEntry> _journal;
 	std::optional<ClientBadge::Role> _ownClientBadge;
 	int _stashHintShowsCount = 0;
 	std::vector<TimeId> _mutePeriods;

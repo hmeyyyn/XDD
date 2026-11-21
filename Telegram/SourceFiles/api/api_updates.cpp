@@ -242,6 +242,8 @@ Updates::Updates(not_null<Main::Session*> session)
 , _byMinChannelTimer([=] { getDifference(); })
 , _failDifferenceTimer([=] { getDifferenceAfterFail(); })
 , _idleFinishTimer([=] { checkIdleFinish(); }) {
+	EnhancedSettings::Changes(EnhancedSettings::Option::GhostMode)
+		| rpl::on_next([=] { updateOnline(); }, _lifetime);
 	EnhancedSettings::Changes(EnhancedSettings::Option::OnlineSpam)
 		| rpl::on_next([=] { updateOnline(); }, _lifetime);
 	_ptsWaiter.setRequesting(true);
@@ -1021,13 +1023,16 @@ void Updates::updateOnline(crl::time lastNonIdleTime, bool gotOtherOffline) {
 		}
 	}
 	auto ms = crl::now();
-	if (EnhancedSettings::Get(EnhancedSettings::Option::OnlineSpam)
+	const auto ghost = EnhancedSettings::Get(EnhancedSettings::Option::GhostMode);
+	if (ghost) {
+		isOnline = false;
+	} else if (EnhancedSettings::Get(EnhancedSettings::Option::OnlineSpam)
 		&& !Core::Quitting()) {
 		constexpr auto kInterval = crl::time(5000);
 		isOnline = (ms / kInterval) % 2 == 0;
 		updateIn = int(kInterval - (ms % kInterval));
 	}
-	if (isOnline != _lastWasOnline
+	if ((ghost && !_lastSetOnline) || isOnline != _lastWasOnline
 		|| (isOnline && _lastSetOnline + config.onlineUpdatePeriod <= ms)
 		|| (isOnline && gotOtherOffline)) {
 		api().request(base::take(_onlineRequest)).cancel();

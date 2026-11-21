@@ -402,6 +402,7 @@ public:
 	[[nodiscard]] bool needCheck() const;
 
 	[[nodiscard]] bool isService() const;
+	void recordJournalSnapshot(bool deleted) const;
 	void applyEdition(HistoryMessageEdition &&edition);
 	void applyChanges(not_null<Data::Story*> story);
 

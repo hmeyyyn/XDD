@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/enhanced_settings.h"
 #include "data/stickers/data_stickers.h"
 
 #include "api/api_hash.h"
@@ -997,6 +998,16 @@ void Stickers::specialSetReceived(
 			customIt = sets.end();
 		}
 
+		// Keep overflow outside the cloud set: the hash sent to Telegram must
+		// continue to describe exactly the cloud response. The normal clear
+		// recents action already removes CustomSetId and its persisted data.
+		auto overflow = StickersPack();
+		if (setId == CloudRecentSetId && !pack.empty()
+			&& EnhancedSettings::Get(EnhancedSettings::Option::ExtendedStickers)) {
+			for (const auto doc : std::as_const(set->stickers)) {
+				if (!pack.contains(doc)) overflow.push_back(doc);
+			}
+		}
 		auto writeRecent = false;
 		auto &recent = getRecentPack();
 		for (auto i = recent.begin(); i != recent.cend();) {
@@ -1014,6 +1025,21 @@ void Stickers::specialSetReceived(
 			setPackAndEmoji(*set, std::move(pack), std::move(dates), packs);
 		}
 
+		if (!overflow.empty()) {
+			auto i = sets.find(CustomSetId);
+			if (i == sets.end()) {
+				i = sets.emplace(CustomSetId, std::make_unique<StickersSet>(
+					&owner(), CustomSetId, uint64(0), uint64(0),
+					tr::lng_recent_stickers(tr::now), QString(), 0,
+					SetFlag::Installed | SetFlag::Special, TimeId(0))).first;
+			}
+			auto &local = i->second->stickers;
+			for (auto j = overflow.crbegin(); j != overflow.crend(); ++j) {
+				local.removeAll(*j);
+				local.push_front(*j);
+			}
+			session().local().writeInstalledStickers();
+		}
 		if (writeRecent) {
 			session().saveSettings();
 		}

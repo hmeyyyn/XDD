@@ -92,6 +92,12 @@ enum class OptionId {
 	ShowRecentForwardTargets,
 	HideGramBalance,
 	ShowPeerInfo,
+	SaveDeleted,
+	SaveEdits,
+	GhostMode,
+	ExactCounts,
+	RelativeOnline,
+	ExtendedStickers,
 	Count,
 };
 
@@ -186,6 +192,12 @@ inline constexpr auto HideGramBalance
 	= Key<bool>{ OptionId::HideGramBalance };
 inline constexpr auto ShowPeerId = Key<bool>{ OptionId::ShowPeerId };
 inline constexpr auto PeerIdType = Key<int>{ OptionId::PeerIdType };
+inline constexpr auto SaveDeleted = Key<bool>{ OptionId::SaveDeleted };
+inline constexpr auto SaveEdits = Key<bool>{ OptionId::SaveEdits };
+inline constexpr auto GhostMode = Key<bool>{ OptionId::GhostMode };
+inline constexpr auto ExactCounts = Key<bool>{ OptionId::ExactCounts };
+inline constexpr auto RelativeOnline = Key<bool>{ OptionId::RelativeOnline };
+inline constexpr auto ExtendedStickers = Key<bool>{ OptionId::ExtendedStickers };
 inline constexpr auto ShowPeerInfo = Key<bool>{ OptionId::ShowPeerInfo };
 inline constexpr auto LlmTranslateEndpoint
 	= Key<QString>{ OptionId::LlmTranslateEndpoint };

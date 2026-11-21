@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/enhanced_settings.h"
 #include "api/api_send_progress.h"
 
 #include "bot_use/bot_use_manager.h"
@@ -171,7 +172,7 @@ bool SendProgressManager::updated(const Key &key, bool doing) {
 }
 
 void SendProgressManager::send(const Key &key, int progress) {
-	if (skipRequest(key)) {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::GhostMode) || skipRequest(key)) {
 		return;
 	}
 	using Type = SendProgressType;

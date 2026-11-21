@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>User · Эскиз значка</title>
+<style>
+:root{font:14px/1.45 'Segoe UI',system-ui,sans-serif;color-scheme:dark;color:#eef0e8;background:#10120e}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:16px}main{width:min(100%,440px);background:#1b1e17;border:1px solid #35392e;border-radius:9px}header,section,footer{padding:16px 20px}header,section{border-bottom:1px solid #35392e}h1{margin:0;font-size:18px}h2,p{margin:0;color:#b2b7a8;font-size:13px;font-weight:400}.row{display:flex;align-items:center;min-height:35px;gap:5px;font-weight:600}.row small{margin-left:auto;font-weight:400;color:#abb39f}.row svg,figure svg{color:#c8cbbb;overflow:visible}.row .micro{width:23px;height:19px;--paper:#191919}.micro .eyes{transform-origin:8px 10px}.micro .ear{transform-origin:12px 6px}figure{margin:12px 0;display:grid;place-items:center;height:112px;background:#171a14;border-radius:5px}figure svg{width:78px;height:78px}footer{display:flex;align-items:center;justify-content:space-between;gap:8px}button,a{font:inherit;font-size:13px;color:#c8d5ba}button{cursor:pointer;border:1px solid #434a3a;background:#292f23;border-radius:5px;padding:6px 10px}button:focus-visible,a:focus-visible{outline:2px solid #abc897}
+@media(prefers-reduced-motion:no-preference){.kitten-eyes{transform-origin:9.5px 9.5px;animation:user-blink 6.8s linear infinite}.drop{transform-origin:0 0;animation:seep 6.8s linear infinite}.restart .kitten-eyes,.restart .drop{animation:none}}
+.row .hatch{display:none}
+@keyframes seep{0%,8%,100%{opacity:.8;transform:scale(.58)}24%{opacity:1;transform:scale(.82,1)}43%{opacity:1;transform:translateY(.8px) scale(.9)}53%{opacity:0;transform:translateY(1.85px) scale(.68)}54%{opacity:0;transform:scale(.4)}68%{opacity:.8;transform:scale(.58)}}
+@keyframes user-blink{0%,10%,14%,100%{transform:scaleY(1)}12%{transform:scaleY(.22)}}
+@media(prefers-reduced-motion:no-preference){.eyes{transform-origin:8px 10.7px;animation:blink 5.9s linear infinite}.ear{transform-origin:12px 7px;animation:flick 8.1s ease-in-out infinite}.turn{transform-origin:0 0;animation:knife-roll 8.1s ease-in-out infinite}.glint{animation:glint 8.1s linear infinite}.restart .mark *{animation:none!important}}
+@media(prefers-reduced-motion:reduce){#replay{display:none}}
+@keyframes blink{0%,5%,9%,78%,82%,100%{transform:scaleY(1)}7%,80%{transform:scaleY(.18)}}
+@keyframes flick{0%,10%,20%,100%{transform:rotate(0)}14%{transform:rotate(9deg)}}
+/* A wrist roll about the grip rather than a flat revolution over the face. */
+@keyframes knife-roll{
+  0%,9%,30%,100%{transform:rotate(0) scaleX(1)}
+  13%{transform:rotate(-8deg) scaleX(.96)}
+  18%{transform:rotate(21deg) scaleX(.4)}
+  21%{transform:rotate(24deg) scaleX(.45)}
+  26%{transform:rotate(-3deg) scaleX(.98)}
+}
+@keyframes glint{0%,21%,27%,100%{opacity:0}24%{opacity:.95}}
+</style><main><header><h1>Значок User</h1><p>Базовая роль · котёнок</p></header><section><h2>У имени · 19 px</h2><div class="row">Алиса <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19 19" width="19" height="19" role="img" aria-label="Значок User"><g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path stroke-width="1.4" d="M9.4 16.7C5 16.7 1.9 14.7 1.9 11.5c0-1.5.5-2.5 1.3-3.5L2 6.9l1.2-3.8L7 5.6q2.5-.8 5 0l3.8-2.5-.15 4.9c.95 1 1.45 2.15 1.45 3.5 0 2.25-1.55 3.9-3.5 4.6"/><path stroke-width="1" d="m2.4 7 1.4.3.95-1.4"/>
+<g class="kitten-eyes" fill="currentColor" stroke="none"><path transform="translate(6.35 9.5)" d="M0 2.1C-.7 1.5-2.35.3-2.35-.85c0-1.4 1.7-1.85 2.35-.5.65-1.35 2.35-.9 2.35.5C2.35.3.7 1.5 0 2.1Z"/><path transform="translate(12.65 9.5)" d="M0 2.1C-.7 1.5-2.35.3-2.35-.85c0-1.4 1.7-1.85 2.35-.5.65-1.35 2.35-.9 2.35.5C2.35.3.7 1.5 0 2.1Z"/></g>
+<path stroke-width="1.05" d="M7.8 12.7q1.7 1.4 3.45 0"/>
+<g transform="translate(11.25 12.95)"><path class="drop" fill="currentColor" stroke="none" d="M0 0C.1.72.94 1.49.94 2.13c0 1.24-1.88 1.24-1.88 0C-.94 1.49-.1.72 0 0Z"/></g></g></svg><small>User</small></div><div class="row">Kloshy | Deepseek r1 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23 19" width="23" height="19" class="mark micro" role="img" aria-label="Founder">
+<!-- Optical cut for a name line: each contour, gap and eye is at least a pixel at rest. -->
+<g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke-width="1.55" d="M13.8 8.6c1.7 3.9-.6 7.1-5.7 7.1-4.5 0-7-2.2-6.6-5.6.1-.9.5-1.8 1-2.5l-.3-4.8L6.8 5q2.4-.6 4.3 0"/>
+  <path class="ear" stroke-width="1.55" d="M10.7 5.2 13.5 3l1.3 3.4-2.1.6"/>
+  <g class="eyes" stroke="none" fill="currentColor"><path d="M4.5 8.7 7 9q0 2.2-1.3 2.1-1.2-.1-1.2-2.4Z"/><ellipse cx="10.8" cy="9.9" rx="1.05" ry="1.25"/></g>
+  <path stroke-width="1.05" d="M7 12.5q1.5 1 2.9-.5"/>
+  <g transform="translate(18.9 12.9)"><g transform="rotate(14)"><g class="turn">
+    <path fill="currentColor" stroke="none" d="M-1-3.5v-2.2l2-1.8v4Z"/><path class="glint" opacity="0" stroke="#fff" stroke-width=".7" d="m-.75-5.6 1.5-1.35"/><rect x="-1.35" y="-2.5" width="2.7" height="6.2" rx=".6" stroke-width="1.25"/>
+  </g></g></g>
+  <path stroke-width="1.6" d="M12.3 15.1q2.4 1.8 4.8-.4l1.7-1.4"/>
+</g></svg><small>Founder</small></div></section><section><h2>Увеличенный User</h2><figure><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19 19" width="19" height="19" role="img" aria-label="Значок User"><g stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path stroke-width="1.18" d="M9.4 16.8C5.1 16.8 1.85 14.7 1.85 11.5q0-2.1 1.35-3.5L1.9 6.9l1.3-3.8L7 5.6q2.5-.85 5 0l3.8-2.5-.15 4.9q1.45 1.55 1.45 3.5c-.05 2.2-1.38 3.8-3.65 4.68"/><path stroke-width="1" d="m2.4 7 1.4.3.95-1.4"/>
+<g class="kitten-eyes" fill="currentColor" stroke="none"><path transform="translate(6.35 9.5)" d="M0 2.1C-.7 1.5-2.35.3-2.35-.85c0-1.4 1.7-1.85 2.35-.5.65-1.35 2.35-.9 2.35.5C2.35.3.7 1.5 0 2.1Z"/><path transform="translate(12.65 9.5)" d="M0 2.1C-.7 1.5-2.35.3-2.35-.85c0-1.4 1.7-1.85 2.35-.5.65-1.35 2.35-.9 2.35.5C2.35.3.7 1.5 0 2.1Z"/></g>
+<path stroke-width="1.05" d="M7.8 12.7q1.7 1.4 3.45 0"/>
+<g transform="translate(11.25 12.95)"><path class="drop" fill="currentColor" stroke="none" d="M0 0C.1.72.94 1.49.94 2.13c0 1.24-1.88 1.24-1.88 0C-.94 1.49-.1.72 0 0Z"/></g><path stroke-width=".32" opacity=".65" d="m2.8 6.7.75-2.05m-.28 2.4.63-1.66m10.5.37.85-.67M3.85 13.5l1.36 1m-.63-1.36 1.25.92m8.37.44 1.05-1.03m-.67 1.32.78-.77"/></g></svg></figure></section><footer><button id="replay">Повторить анимацию</button><a href="user-study.html" download>Скачать HTML</a></footer></main><script>document.querySelector('button').onclick=()=>{const m=document.querySelector('main');m.classList.add('restart');void m.offsetWidth;m.classList.remove('restart')}</script></html>

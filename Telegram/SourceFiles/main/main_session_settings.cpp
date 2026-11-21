@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "base/unixtime.h"
 #include "main/main_session_settings.h"
 #include "chat_helpers/spellchecker_locale_ids.h"
 
@@ -38,6 +39,15 @@ SessionSettings::SessionSettings()
 
 void SessionSettings::resetToDefaults() {
 	addFromSerialized(SessionSettings().serialize(), AppVersion);
+}
+
+void SessionSettings::appendJournalEntry(JournalEntry entry) {
+	const auto cutoff = entry.time - kJournalLifetime;
+	std::erase_if(_journal, [&](const auto &old) { return old.time < cutoff; });
+	if (_journal.size() >= kJournalLimit) {
+		_journal.erase(_journal.begin());
+	}
+	_journal.push_back(std::move(entry));
 }
 
 QByteArray SessionSettings::serialize() const {
@@ -101,6 +111,16 @@ QByteArray SessionSettings::serialize() const {
 	size += sizeof(qint32); // _extraFavoriteReactions size
 	for (const auto &id : _extraFavoriteReactions) {
 		size += sizeof(quint64) + Serialize::stringSize(id.emoji());
+	}
+	const auto cutoff = int64(base::unixtime::now()) - kJournalLifetime;
+	qint32 journalCount = 0;
+	size += sizeof(qint32);
+	for (const auto &entry : _journal) {
+		if (entry.time >= cutoff) {
+			++journalCount;
+			size += sizeof(qint64) + Serialize::stringSize(entry.heading)
+				+ Serialize::stringSize(entry.text);
+		}
 	}
 	size += sizeof(qint32); // _ownClientBadge
 	size += sizeof(qint32); // _stashHintShowsCount
@@ -198,6 +218,12 @@ QByteArray SessionSettings::serialize() const {
 		}
 		stream << qint32(_stashHintShowsCount);
 		stream << (_ownClientBadge ? qint32(*_ownClientBadge) : qint32(-1));
+		stream << journalCount;
+		for (const auto &entry : _journal) {
+			if (entry.time >= cutoff) {
+				stream << entry.time << entry.heading << entry.text;
+			}
+		}
 	}
 
 	Ensures(result.size() == size);
@@ -766,6 +792,19 @@ void SessionSettings::addFromSerialized(
 	if (!stream.atEnd()) {
 		stream >> ownClientBadge;
 	}
+	auto journal = std::vector<JournalEntry>();
+	if (!stream.atEnd()) {
+		qint32 count = 0;
+		stream >> count;
+		if (count < 0 || count > kJournalLimit) return;
+		const auto cutoff = int64(base::unixtime::now()) - kJournalLifetime;
+		for (auto i = 0; i != count; ++i) {
+			auto entry = JournalEntry();
+			stream >> entry.time >> entry.heading >> entry.text;
+			if (stream.status() != QDataStream::Ok) return;
+			if (entry.time >= cutoff) journal.push_back(std::move(entry));
+		}
+	}
 	if (stream.status() != QDataStream::Ok) {
 		LOG(("App Error: "
 			"Bad data for SessionSettings::addFromSerialized()"));
@@ -833,6 +872,7 @@ void SessionSettings::addFromSerialized(
 	_phoneNumberHidden = (phoneNumberHidden == 1);
 	_extraFavoriteReactions = std::move(extraFavoriteReactions);
 	_stashHintShowsCount = stashHintShowsCount;
+	_journal = std::move(journal);
 	_ownClientBadge.reset();
 	if (ownClientBadge >= 0 && ownClientBadge <= qint32(ClientBadge::Role::Founder)) {
 		_ownClientBadge = ClientBadge::Role(ownClientBadge);

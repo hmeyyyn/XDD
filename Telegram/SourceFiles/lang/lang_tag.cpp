@@ -15,6 +15,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <QtCore/QLocale>
 
+#include <atomic>
+
 namespace Lang {
 namespace {
 
@@ -917,7 +919,18 @@ int NonZeroPartToInt(QString value) {
 		: (value.isEmpty() ? 0 : value.toInt());
 }
 
+namespace {
+std::atomic<bool> ExactCounts = false;
+} // namespace
+
+void SetExactCounts(bool enabled) {
+	ExactCounts.store(enabled, std::memory_order_relaxed);
+}
+
 ShortenedCount FormatCountToShort(int64 number, bool onlyK) {
+	if (ExactCounts.load(std::memory_order_relaxed)) {
+		return { number, FormatCountDecimal(number), false };
+	}
 	auto result = ShortenedCount{ number };
 	const auto abs = std::abs(number);
 	const auto shorten = [&](int64 divider, char multiplier) {

@@ -517,7 +517,7 @@ void BuildEnhancedSection(SectionBuilder &builder) {
 	builder.addSectionButton({
 		.title = tr::lng_yanderegram_settings_title(),
 		.targetSection = EnhancedId(),
-		.icon = { &st::menuIconManage },
+		.icon = { &st::menuIconYandereGram },
 		.keywords = { u"enhanced"_q },
 	});
 	builder.addSectionButton({

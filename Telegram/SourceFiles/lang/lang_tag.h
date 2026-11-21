@@ -26,6 +26,7 @@ struct ShortenedCount {
 	QString string;
 	bool shortened = false;
 };
+void SetExactCounts(bool enabled);
 [[nodiscard]] ShortenedCount FormatCountToShort(
 	int64 number,
 	bool onlyK = false);
