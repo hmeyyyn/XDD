@@ -601,7 +601,7 @@ void SetupRows(
 
 	AddButtonWithLabel(
 		container,
-		tr::lng_client_badge_choose(),
+		tr::lng_yg_role_label(),
 		Info::Profile::ClientMarkContentForPeer(self) | rpl::map([](
 				Info::Profile::Badge::Content content) {
 			return (content.role == ClientBadge::Role::None)
@@ -613,22 +613,15 @@ void SetupRows(
 		if (controller->showFrozenError()) {
 			return;
 		}
-		controller->show(Box([=](not_null<Ui::GenericBox*> box) {
-			using Role = ClientBadge::Role;
-			SingleChoiceBox(box, {
-				.title = tr::lng_client_badge_choose(),
-				.options = {
-					tr::lng_client_badge_none(tr::now),
-					ClientBadge::RoleName(Role::Supporter),
-					ClientBadge::RoleName(Role::BugHunter),
-					ClientBadge::RoleName(Role::Developer),
-					ClientBadge::RoleName(Role::Founder),
-				},
-				.initialSelection = int(ClientBadge::RoleOfPeer(self)),
-				.callback = [=](int index) {
-					ClientBadge::ChooseOwnRole(session, Role(index));
-				},
-			});
+		const auto role = ClientBadge::RoleOfPeer(self);
+		if (role != ClientBadge::Role::None && ClientBadge::MarkedRole(self->lastName) == role) {
+			ClientBadge::ShowRoleToast(container, role);
+			return;
+		}
+		controller->show(Ui::MakeConfirmBox({
+			.text = tr::lng_yg_publish_badge(),
+			.confirmed = [=] { ClientBadge::ChooseOwnRole(session,
+				role == ClientBadge::Role::None ? ClientBadge::Role::User : role); },
 		}));
 	});
 

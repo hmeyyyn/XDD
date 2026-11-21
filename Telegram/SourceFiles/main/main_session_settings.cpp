@@ -874,7 +874,7 @@ void SessionSettings::addFromSerialized(
 	_stashHintShowsCount = stashHintShowsCount;
 	_journal = std::move(journal);
 	_ownClientBadge.reset();
-	if (ownClientBadge >= 0 && ownClientBadge <= qint32(ClientBadge::Role::Founder)) {
+	if (ownClientBadge >= 0 && ownClientBadge <= qint32(ClientBadge::Role::User)) {
 		_ownClientBadge = ClientBadge::Role(ownClientBadge);
 	}
 

@@ -12,7 +12,7 @@
 #include "main/main_session.h"
 #include "settings/settings_builder.h"
 #include "settings/settings_common.h"
-#include "settings/sections/settings_main.h"
+#include "settings/sections/settings_enhanced.h"
 #include "ui/boxes/confirm_box.h"
 #include "ui/controls/userpic_button.h"
 #include "ui/layers/generic_box.h"
@@ -186,7 +186,7 @@ void AddBotStatus(
 
 [[maybe_unused]] const auto kBotUseMeta = Builder::BuildHelper({
 	.id = BotUseSettings::Id(),
-	.parentId = MainId(),
+	.parentId = EnhancedId(),
 	.title = &tr::lng_bot_use_settings,
 	.icon = &st::menuIconBot,
 }, [](Builder::SectionBuilder &builder) {

@@ -368,7 +368,6 @@ private:
 	void addSupportInfo();
 	void addInfo();
 	void addViewPeerInfo();
-	void addChooseClientBadge();
 	void addGrantClientBadge();
 	void addChatEnhancedSettings();
 	void addStoryArchive();
@@ -2118,7 +2117,6 @@ void Filler::addViewPeerInfo() {
 void Filler::fillProfileActions() {
 	addTTLSubmenu(true);
 	addViewPeerInfo();
-	addChooseClientBadge();
 	addGrantClientBadge();
 	addSupportInfo();
 	addNewContact();
@@ -2333,34 +2331,6 @@ void Filler::addToggleFee() {
 		}));
 		return result;
 	} });
-}
-
-void Filler::addChooseClientBadge() {
-	const auto user = _peer ? _peer->asUser() : nullptr;
-	if (!user || !user->isSelf() || _topic || _sublist) {
-		return;
-	}
-	const auto session = &_peer->session();
-	_addAction(PeerMenuCallback::Args{
-		.text = tr::lng_client_badge_choose(tr::now),
-		.handler = nullptr,
-		.icon = &st::menuIconProfile,
-		.fillSubmenu = [=](not_null<Ui::PopupMenu*> menu) {
-			const auto add = [&](ClientBadge::Role role) {
-				const auto text = (role == ClientBadge::Role::None)
-					? tr::lng_client_badge_none(tr::now)
-					: ClientBadge::RoleName(role);
-				menu->addAction(text, [=] {
-					ClientBadge::ChooseOwnRole(session, role);
-				});
-			};
-			add(ClientBadge::Role::None);
-			add(ClientBadge::Role::Supporter);
-			add(ClientBadge::Role::BugHunter);
-			add(ClientBadge::Role::Developer);
-			add(ClientBadge::Role::Founder);
-		},
-	});
 }
 
 void Filler::addGrantClientBadge() {

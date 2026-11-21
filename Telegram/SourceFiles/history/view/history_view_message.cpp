@@ -2551,8 +2551,11 @@ void Message::paintFromName(
 		}
 		return &info->nameText();
 	}();
-	const auto marked = from && ClientBadge::IsMarkedPeer(from);
-	const auto statusWidth = (_fromNameStatus || marked)
+	const auto role = from ? ClientBadge::RoleOfPeer(from) : ClientBadge::Role::None;
+	const auto marked = role != ClientBadge::Role::None;
+	const auto statusWidth = marked
+		? Ui::ClientMarkWidth(role, st::emojiSize)
+		: _fromNameStatus
 		? st::dialogsPremiumIcon.icon.width()
 		: 0;
 	const auto via = item->Get<HistoryMessageVia>();
@@ -2574,9 +2577,10 @@ void Message::paintFromName(
 		if (marked) {
 			Ui::DrawClientMark(
 				p,
-				QRect(QPoint(x, y), Size(st::emojiSize)),
-				color,
-				ClientBadge::RoleOfPeer(from));
+				QRect(x, y, statusWidth, st::emojiSize),
+				nameFg,
+				role,
+				context.now);
 		} else if (_fromNameStatus) {
 			const auto id = fromNameStatusId(from);
 			if (_fromNameStatus->id != id) {

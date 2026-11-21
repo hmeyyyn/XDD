@@ -6,6 +6,8 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/unread_badge.h"
+#include "core/appearance.h"
+#include <QtGui/QPixmapCache>
 
 #include "data/data_emoji_statuses.h"
 #include "core/client_badge.h"
@@ -266,16 +268,15 @@ int PeerBadge::drawClientMark(Painter &p, const Descriptor &descriptor) {
 	const auto rectForName = descriptor.rectForName;
 	const auto skip = st::dialogsChatTypeSkip;
 	const auto size = std::min(st::emojiSize, rectForName.height());
+	const auto width = ClientMarkWidth(role, size);
 	const auto x = rectForName.x()
-		+ std::min(
-			descriptor.nameWidth + drawn + skip,
-			rectForName.width() - size);
+		+ std::min(descriptor.nameWidth + drawn + skip, rectForName.width() - width);
 	const auto rect = QRect(
 		QPoint(x, rectForName.y() + (rectForName.height() - size) / 2),
-		Size(size));
+		QSize(width, size));
 	_clientMarkRect = rect;
 	DrawClientMark(p, rect, *descriptor.premiumFg, role, descriptor.now);
-	return drawn + size + skip;
+	return drawn + width + skip;
 }
 
 int PeerBadge::drawExisting(Painter &p, const Descriptor &descriptor) {
@@ -537,7 +538,7 @@ void DrawClientMark(
 	}
 	const auto hq = PainterHighQualityEnabler(p);
 
-	const auto side = float64(std::min(rect.width(), rect.height()));
+	const auto side = std::min(float64(rect.width()), rect.height() * (role == ClientBadge::Role::Founder ? (23. / 19.) : 1.));
 	p.save();
 	p.translate(rect.center());
 	p.scale(side / 20., side / 20.);
@@ -663,33 +664,31 @@ void DrawClientMark(
 		}
 	} break;
 
-	case ClientBadge::Role::Founder: {
-		// Collar with a bell hanging on it, the bell swinging.
-		auto pen = QPen(fg);
-		pen.setWidthF(1.7);
-		pen.setCapStyle(Qt::RoundCap);
-		p.setPen(pen);
-		p.setBrush(Qt::NoBrush);
-
-		auto band = QPainterPath();
-		band.moveTo(3.0, 7.6);
-		band.cubicTo(5.6, 11.4, 14.4, 11.4, 17.0, 7.6);
-		p.drawPath(band);
-
-		const auto swing = std::sin(now / 300.) * 1.5;
-		p.setPen(Qt::NoPen);
-		p.setBrush(fg);
-		const auto bx = 10. + swing;
-		p.drawEllipse(QPointF(bx, 13.6), 2.35, 2.35);
-		p.setBrush(Qt::white);
-		p.drawEllipse(QPointF(bx, 14.35), 0.42, 0.42);
-
-		p.setPen(pen);
-		p.setBrush(Qt::NoBrush);
-		auto ring = QPainterPath();
-		ring.moveTo(bx, 10.6);
-		ring.lineTo(bx, 11.2);
-		p.drawPath(ring);
+	case ClientBadge::Role::Founder:
+	case ClientBadge::Role::User: {
+		const auto founder = (role == ClientBadge::Role::Founder);
+		static const QImage founderMask(u":/gui/art/badge_founder.png"_q);
+		static const QImage userMask(u":/gui/art/badge_user.png"_q);
+		const auto &mask = founder ? founderMask : userMask;
+		const auto time = Appearance::Get(Appearance::Key::BadgeMotion) || anim::Disabled() ? 0 : now;
+		const auto frame = int((time % (founder ? 8100 : 6800)) * 64 / (founder ? 8100 : 6800));
+		const auto w = mask.width() / 8, h = mask.height() / 8;
+		const auto key = u"yg/kitten/%1/%2/%3"_q.arg(int(role)).arg(fg.rgba()).arg(frame);
+		QPixmap icon;
+		if (!QPixmapCache::find(key, &icon)) {
+			auto image = mask.copy((frame % 8) * w, (frame / 8) * h, w, h)
+				.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+			QPainter tint(&image);
+			tint.setCompositionMode(QPainter::CompositionMode_SourceIn);
+			const auto gray = qGray(fg.rgb());
+			tint.fillRect(image.rect(), QColor(gray, gray, gray, fg.alpha()));
+			tint.end();
+			icon = QPixmap::fromImage(image);
+			QPixmapCache::insert(key, icon);
+		}
+		const auto height = founder ? 20. * 19 / 23 : 20.;
+		p.setRenderHint(QPainter::SmoothPixmapTransform);
+		p.drawPixmap(QRectF(0., (20. - height) / 2, 20., height), icon, QRectF(icon.rect()));
 	} break;
 
 	case ClientBadge::Role::None:
