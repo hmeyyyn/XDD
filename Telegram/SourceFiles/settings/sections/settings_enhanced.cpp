@@ -4,11 +4,15 @@ the unofficial app based on Telegram Desktop.
 For license and copyright information please follow this link:
 https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
 */
+#include "base/unixtime.h"
+#include "main/main_session_settings.h"
 #include <base/timer_rpl.h>
 #include <ui/toast/toast.h>
 #include <mainwindow.h>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QDateTime>
+#include <QLocale>
 #include <QtGui/QGuiApplication>
 #include "settings/sections/settings_enhanced.h"
 
@@ -67,6 +71,39 @@ namespace {
 
 const auto kEnhancedSettingsClipboardPrefix
 	= u"yanderegram-settings:"_q;
+
+class MessageJournal final : public Section<MessageJournal> {
+public:
+	MessageJournal(QWidget *parent, not_null<Window::SessionController*> controller)
+	: Section(parent, controller) {
+		const auto page = Ui::CreateChild<Ui::VerticalLayout>(this);
+		const auto session = &controller->session();
+		const auto entries = Ui::CreateChild<Ui::VerticalLayout>(page);
+		const auto refresh = [=] {
+			entries->clear();
+			const auto cutoff = int64(base::unixtime::now()) - Main::SessionSettings::kJournalLifetime;
+			const auto &journal = session->settings().journal();
+			auto empty = true;
+			for (auto i = journal.rbegin(); i != journal.rend(); ++i) {
+				if (i->time < cutoff) continue;
+				empty = false;
+				const auto when = QLocale().toString(QDateTime::fromSecsSinceEpoch(i->time), QLocale::ShortFormat);
+				Ui::AddDividerText(entries, rpl::single(i->heading + u" · "_q + when + '\n' + i->text));
+			}
+			if (empty) Ui::AddDividerText(entries, tr::lng_yg_journal_empty());
+		};
+		AddButtonWithIcon(page, tr::lng_yg_journal_clear(), st::settingsButtonNoIcon)
+			->addClickHandler([=] {
+				session->settings().clearJournal();
+				session->saveSettings();
+				refresh();
+			});
+		page->add(object_ptr<Ui::VerticalLayout>::fromRaw(entries));
+		refresh();
+		Ui::ResizeFitChild(this, page);
+	}
+	rpl::producer<QString> title() override { return tr::lng_yg_journal(); }
+};
 
 class Customization final : public Section<Customization> {
 public:
@@ -156,8 +193,21 @@ struct DecodeEnhancedSettingsResult {
 	.id = Enhanced::Id(),
 	.parentId = MainId(),
 	.title = &tr::lng_yanderegram_settings_title,
-	.icon = &st::menuIconManage,
+	.icon = &st::menuIconYandereGram,
 }, [](Builder::SectionBuilder &builder) {
+	for (const auto option : { EnhancedSettings::OptionId::SaveDeleted,
+			EnhancedSettings::OptionId::SaveEdits, EnhancedSettings::OptionId::GhostMode,
+			EnhancedSettings::OptionId::ExactCounts, EnhancedSettings::OptionId::RelativeOnline,
+			EnhancedSettings::OptionId::ExtendedStickers }) {
+		builder.add(nullptr, [=] {
+			const auto id = EnhancedSettings::ControlId(option);
+			return Builder::SearchEntry{
+				.id = id,
+				.title = EnhancedSettings::OptionTitle(option),
+				.deeplink = u"tg://settings/"_q + id,
+			};
+		});
+	}
 	builder.add(nullptr, [] {
 		return Builder::SearchEntry{
 			.id = u"enhanced/show-message-id"_q,
@@ -792,6 +842,12 @@ struct DecodeEnhancedSettingsResult {
 	}
 
 	void Enhanced::setupMessages(not_null<Ui::VerticalLayout*> content) {
+		addToggleOption(content, EnhancedSettings::Option::SaveDeleted);
+		addToggleOption(content, EnhancedSettings::Option::SaveEdits);
+		AddButtonWithIcon(content, tr::lng_yg_journal(), st::settingsButtonNoIcon)
+			->addClickHandler([=] { showOther(MessageJournal::Id()); });
+		Ui::AddDividerText(content, tr::lng_yg_journal_about());
+
 		addToggleOption(content, EnhancedSettings::Option::ShowMessagesId);
 		addToggleOption(
 			content,
@@ -822,6 +878,10 @@ struct DecodeEnhancedSettingsResult {
 	}
 
 	void Enhanced::setupInterface(not_null<Ui::VerticalLayout*> content) {
+		addToggleOption(content, EnhancedSettings::Option::ExactCounts);
+		addToggleOption(content, EnhancedSettings::Option::RelativeOnline);
+		addToggleOption(content, EnhancedSettings::Option::ExtendedStickers);
+
 		addToggleOption(
 			content,
 			EnhancedSettings::Option::DisablePremiumAnimation);
@@ -861,6 +921,8 @@ struct DecodeEnhancedSettingsResult {
 	}
 
 	void Enhanced::setupBehavior(not_null<Ui::VerticalLayout*> content) {
+		addToggleOption(content, EnhancedSettings::Option::GhostMode, tr::lng_yg_ghost_about());
+
 		addToggleOption(content, EnhancedSettings::Option::OnlineSpam);
 		addToggleOption(content, EnhancedSettings::Option::ShowSimilarOnJoined);
 		addToggleOption(

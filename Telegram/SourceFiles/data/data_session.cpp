@@ -3373,6 +3373,7 @@ void Session::processMessagesDeleted(
 	if (!toDestroy.empty()) {
 		notifyItemsAboutToBeDestroyed(toDestroy);
 		for (const auto &item : toDestroy) {
+			item->recordJournalSnapshot(true);
 			item->destroy();
 		}
 	}
@@ -3396,6 +3397,7 @@ void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 	if (!toDestroy.empty()) {
 		notifyItemsAboutToBeDestroyed(toDestroy);
 		for (const auto &item : toDestroy) {
+			item->recordJournalSnapshot(true);
 			item->destroy();
 		}
 	}

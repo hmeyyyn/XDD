@@ -55,6 +55,7 @@ menuIconMarkUnread: icon {{ "menu/unread", menuIconColor }};
 menuIconChangeColors: icon {{ "menu/colors", menuIconColor }};
 menuIconExport: icon {{ "menu/export", menuIconColor }};
 menuIconClear: icon {{ "menu/clear", menuIconColor }};
+menuIconYandereGram: icon {{ "menu/yanderegram", menuIconColor }};
 menuIconManage: icon {{ "menu/manage", menuIconColor }};
 menuIconDiscussion: icon {{ "menu/discussion", menuIconColor }};
 menuIconStats: icon {{ "menu/stats", menuIconColor }};

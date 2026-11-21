@@ -25,6 +25,8 @@ enum class ChatFeature {
 	ShowScheduledButton,
 	DisableCloudDraftSync,
 	DisableSyncDraftToCloud,
+	SaveDeleted,
+	SaveEdits,
 	Count,
 };
 

@@ -5,6 +5,7 @@ the official desktop application for the Telegram messaging service.
 For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
+#include "core/enhanced_settings.h"
 #include "data/data_peer_values.h"
 
 #include "lang/lang_keys.h"
@@ -43,6 +44,10 @@ int OnlinePhraseChangeInSeconds(LastseenStatus status, TimeId now) {
 		return (minutes + 1) * 60 - (now - till);
 	}
 	const auto hours = (now - till) / 3600;
+	if (EnhancedSettings::Get(EnhancedSettings::Option::RelativeOnline)) {
+		const auto unit = (hours < 24) ? 3600 : 86400;
+		return unit - ((now - till) % unit);
+	}
 	if (hours < 12) {
 		return (hours + 1) * 3600 - (now - till);
 	}
@@ -501,7 +506,12 @@ QString OnlineText(Data::LastseenStatus status, TimeId now) {
 		return tr::lng_status_lastseen_minutes(tr::now, lt_count, minutes);
 	}
 	const auto hours = (now - till) / 3600;
-	if (hours < 12) {
+	const auto relative = EnhancedSettings::Get(EnhancedSettings::Option::RelativeOnline);
+	if (relative && hours >= 24) {
+		return tr::lng_status_lastseen_date(tr::now, lt_date,
+			tr::lng_date_relative_days_ago(tr::now, lt_count, hours / 24));
+	}
+	if (relative || hours < 12) {
 		return tr::lng_status_lastseen_hours(tr::now, lt_count, hours);
 	}
 	const auto onlineFull = base::unixtime::parse(till);
@@ -526,6 +536,7 @@ QString OnlineText(not_null<UserData*> user, TimeId now) {
 }
 
 QString OnlineTextFull(not_null<UserData*> user, TimeId now) {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::RelativeOnline)) return OnlineText(user, now);
 	if (const auto special = OnlineTextSpecial(user)) {
 		return *special;
 	} else if (const auto common = OnlineTextCommon(user->lastseen(), now)) {

@@ -2474,11 +2474,32 @@ void HistoryItem::clearMainView() {
 	_mainView = nullptr;
 }
 
+void HistoryItem::recordJournalSnapshot(bool deleted) const {
+	using Feature = EnhancedSettings::ChatFeature;
+	if (!isRegular() || isEphemeral() || isService() || ttlDestroyAt() || !allowsForward()
+		|| (media() && media()->ttlSeconds()) || originalText().text.isEmpty()
+		|| !EnhancedSettings::ResolveChatFeature(history()->peer,
+			deleted ? Feature::SaveDeleted : Feature::SaveEdits)) {
+		return;
+	}
+	auto &session = history()->session();
+	const auto heading = (deleted ? tr::lng_yg_journal_deleted(tr::now)
+		: tr::lng_yg_journal_edited(tr::now)) + u" · "_q
+		+ history()->peer->name() + u" #"_q + QString::number(id.bare);
+	session.settings().appendJournalEntry({
+		base::unixtime::now(), heading, originalText().text });
+	session.saveSettingsDelayed();
+}
+
 void HistoryItem::applyEdition(HistoryMessageEdition &&edition) {
 	if (_isServiceMessage) {
 		return;
 	}
 	history()->session().ephemeralMessages().revertAnchored(this);
+	if (edition.editDate > 0 && !edition.ttl
+		&& originalText().text != edition.textWithEntities.text) {
+		recordJournalSnapshot(false);
+	}
 
 	int keyboardTop = -1;
 	//if (!pendingResize()) {// #TODO edit bot message

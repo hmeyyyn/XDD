@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="384" height="384" role="img" aria-labelledby="title desc">
+<title id="title">YandereGram — котёнок с бумажным самолётиком</title>
+<desc id="desc">Котёнок анфас держит бумажный самолётик двумя лапками перед грудью. Два клыка вонзаются в край бумажного крыла, оставляя парные проколы.</desc>
+<g stroke-linecap="round" stroke-linejoin="round">
+<!-- Rounded haunches and two planted feet, behind the wings. -->
+<path fill="#202021" stroke="#deded9" stroke-width="2.8" d="M31 54q-5 5-7 13-5 6-4 13 1 5 9 5h34q9 0 10-5 0-8-5-14-2-8-8-13Z"/>
+<path fill="#202021" stroke="#deded9" stroke-width="2.3" d="M36 79q-4-1-7 2-3 4 0 5 5 2 12 0m11-6q5-2 10 2 3 3 0 4-5 2-11 0"/>
+<!-- A tapered ink contour, not concentric mechanical outlines. -->
+<path fill="#deded9" d="M16 32Q13 21 15 8q10 2 19 12 10-4 22-1l9-7q3-1 5 3l7 12-7 4q9 12 3 23-7 13-28 14-21-1-30-12-8-10 1-24Z"/>
+<path fill="#202021" d="m18 12 1.6 21Q12 42 16 51q6 13 30 14 21-2 26-14 4-9-4-18l-2-2-6-4 3-1 6 2 4-2-6-11-10 8q-13-4-23 1Q25 16 18 12Z"/>
+<path fill="#deded9" d="m20 17 8 7-6-2-.4 5Zm37 5 6-4-3 7Zm-39 17q7-3 13-8l-2 4 9-4q-6 6-14 9l2-3Z"/>
+<!-- Heart and half-lidded eye share a baseline. -->
+<path fill="#edece7" d="M32 48q-7-4.6-7-8.1.3-4.3 4-3.9 2.4.2 3.1 2.4 1.6-3.1 4.5-2.3 3.4 1.5 1.4 5-1.1 2-6 6.9Zm19-9.7q6.6 1.2 12-1.8-1.5 2.6-4 3.7.4 6.1-3.9 6.2-3.3-.2-3-5.2Z"/>
+<path fill="#ecece8" d="M41 47.1q3-1.4 6 0l-3.1 2.7Z"/>
+<g fill="none" stroke="#aeaeaa" stroke-width=".95"><path d="m18 47 6 1m-6 2.3 4.8.8m38.8-3.7 5.4-1.3m-4.3 3.6 4.7-.8M17.7 15.1l.3 8.8m2.1 31.3 4.6 3.1m-.7-3.5 3.7 2.7m36.5-40.2 2.8 5.3"/></g>
+<!-- Plane crosses the chest. Near wing is solid paper; far fold is shaded. -->
+<path fill="#ecece6" stroke="#171719" stroke-width="2.2" d="M19 65Q29 60 38 54.2q1.9-1.25 3.7-.65l3.4.55 5.3-1.3L80 45 58 77l-12-8-9 6-1-7Z"/>
+<path fill="#777778" d="m36 68 39-20-32 18-6 9Z"/>
+<path fill="none" stroke="#272728" stroke-width="1.5" d="m46 69-3.5-2.3L77 47"/>
+<!-- Bite pockets in the near paper face, not marks floating under the mouth. -->
+<g fill="#474749"><path d="M36.7 57q1.6-.65 2.65-.15l2.8-.35-.95 1.25-1.85.85Z"/><path d="m47.25 55.7 2.1-.55 2.8-.3-1.1 1.65-1.55.6Z"/></g>
+<g fill="none" stroke="#888888" stroke-width=".5"><path d="m39.5 58.1-.65 1.3-1.35.9m3-2.55 1.55.7m7.9-1.65-.45 1.3 1.05.8m.25-2.7 1.9.25"/></g>
+<!-- Curved canines terminate inside the slits; the forward paper lips overlap the tips. -->
+<path fill="#faf9f5" stroke="#202021" stroke-width=".8" d="M36.65 52.3q.55 3.1 2.85 5.25 1.12-2.02 1.3-4.9Z M47.45 53.1q.77 2.02 2.52 3.18 1.55-2.13 1.92-4.21Z"/>
+<path fill="none" stroke="#414143" stroke-width=".65" d="m37.1 57.4 2.3.55 2.1-1.03m6.45-.8 1.95.55 1.68-1.2"/>
+<path fill="#e5e5df" d="M37.8 52.1q2.9 1.5 5.6-.9l.65-.65.64.72c2.25 2.48 5.6 2.6 9.15-.42-1.82 4.3-6.56 5.12-9.92 1.82-2.07 1.36-4.44 1.5-6.12-.57Z"/>
+<!-- Both mittens sit in front of the folds, gripping rather than pointing. -->
+<g fill="#222223" stroke="#deded9" stroke-width="2.25"><path d="M23 62q-1.7-4 1.3-5.3 2.1-1 4.1 1.3 3-.8 4.1 1.9 2.5 1.2 1.8 4.1-.6 3.3-4.1 4.1-5.4 1.1-8.2-3.9"/><path d="M63.5 63.3q-.7-2.7 1.5-4.1 1.9-3 4.6-1.6 2.4-1.6 4.4.6 2.7 1.9 1.1 5.2-2.1 4.9-7.3 5.1-3.2-.4-4.3-3.2"/></g>
+<path fill="none" stroke="#bdbdb9" stroke-width="1.25" d="m25 59.7 1.7 2.4m2-3 1.5 2.3m38.1-.7-1.2 2.3m4.7-2.7-1.5 2.7"/>
+</g></svg>
