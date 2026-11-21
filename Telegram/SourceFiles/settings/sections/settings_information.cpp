@@ -23,6 +23,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/widgets/box_content_divider.h"
 #include "ui/widgets/menu/menu_add_action_callback_factory.h"
 #include "ui/boxes/confirm_box.h"
+#include "ui/boxes/single_choice_box.h"
+#include "ui/layers/generic_box.h"
 #include "ui/controls/button_context_menu.h"
 #include "ui/controls/userpic_button.h"
 #include "ui/new_badges.h"
@@ -33,6 +35,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/unread_badge_paint.h"
 #include "ui/ui_utility.h"
 #include "core/application.h"
+#include "core/client_badge.h"
 #include "core/click_handler_types.h"
 #include "core/core_settings.h"
 #include "chat_helpers/emoji_suggestions_widget.h"
@@ -305,6 +308,12 @@ void SetupPhoto(
 		}
 	}, upload->lifetime());
 
+	const auto mark = wrap->lifetime().make_state<Info::Profile::Badge>(
+		wrap, st::settingsInfoPeerBadge, &self->session(),
+		Info::Profile::ClientMarkContentForPeer(self), nullptr, nullptr);
+	mark->setPremiumClickCallback([=] {
+		ClientBadge::ShowRoleToast(wrap, ClientBadge::RoleOfPeer(self));
+	});
 	const auto name = Ui::CreateChild<Ui::FlatLabel>(
 		wrap,
 		Info::Profile::NameValue(self),
@@ -318,12 +327,14 @@ void SetupPhoto(
 		wrap->widthValue(),
 		photo->widthValue(),
 		Info::Profile::NameValue(self),
-		status->widthValue()
+		status->widthValue(),
+		rpl::single() | rpl::then(mark->updated())
 	) | rpl::on_next([=](
 			int max,
 			int photoWidth,
 			const QString&,
-			int statusWidth) {
+			int statusWidth,
+			rpl::empty_value) {
 		photo->moveToLeft(
 			(max - photoWidth) / 2,
 			st::settingsInfoPhotoTop);
@@ -334,10 +345,12 @@ void SetupPhoto(
 				+ st::settingsInfoUploadLeft),
 			photo->y() + photo->height() - upload->height());
 		const auto skip = st::settingsButton.iconLeft;
-		name->resizeToNaturalWidth(max - 2 * skip);
-		name->moveToLeft(
-			(max - name->width()) / 2,
-			(photo->y() + photo->height() + st::settingsInfoPhotoSkip));
+		const auto badgeWidth = mark->widget() ? mark->widget()->width() : 0;
+		name->resizeToNaturalWidth(std::max(0, max - 2 * skip - badgeWidth));
+		const auto left = (max - name->width() - badgeWidth) / 2;
+		const auto top = photo->y() + photo->height() + st::settingsInfoPhotoSkip;
+		name->moveToLeft(left, top);
+		mark->move(left + name->width(), top, top + name->height());
 		status->moveToLeft(
 			(max - statusWidth) / 2,
 			(name->y() + name->height() + st::settingsInfoNameSkip));
@@ -585,6 +598,39 @@ void SetupRows(
 	if (targets) {
 		targets->name = nameButton;
 	}
+
+	AddButtonWithLabel(
+		container,
+		tr::lng_client_badge_choose(),
+		Info::Profile::ClientMarkContentForPeer(self) | rpl::map([](
+				Info::Profile::Badge::Content content) {
+			return (content.role == ClientBadge::Role::None)
+				? tr::lng_client_badge_none(tr::now)
+				: ClientBadge::RoleName(content.role);
+		}),
+		st::settingsButton,
+		{ &st::menuIconProfile })->addClickHandler([=] {
+		if (controller->showFrozenError()) {
+			return;
+		}
+		controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+			using Role = ClientBadge::Role;
+			SingleChoiceBox(box, {
+				.title = tr::lng_client_badge_choose(),
+				.options = {
+					tr::lng_client_badge_none(tr::now),
+					ClientBadge::RoleName(Role::Supporter),
+					ClientBadge::RoleName(Role::BugHunter),
+					ClientBadge::RoleName(Role::Developer),
+					ClientBadge::RoleName(Role::Founder),
+				},
+				.initialSelection = int(ClientBadge::RoleOfPeer(self)),
+				.callback = [=](int index) {
+					ClientBadge::ChooseOwnRole(session, Role(index));
+				},
+			});
+		}));
+	});
 
 	const auto showChangePhone = [=] {
 		controller->show(

@@ -15,6 +15,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_text_entities.h"
 #include "base/timer_rpl.h"
 #include "core/application.h"
+#include "core/client_badge.h"
 #include "storage/localstorage.h"
 #include "storage/storage_account.h"
 #include "storage/storage_user_photos.h"
@@ -410,6 +411,7 @@ void UserData::setName(
 		const QString &newLastName,
 		const QString &newPhoneName,
 		const QString &newUsername) {
+	const auto previousLastName = lastName;
 	bool changeName = !newFirstName.isEmpty() || !newLastName.isEmpty();
 
 	if (changeName && newFirstName.trimmed().isEmpty()) {
@@ -423,6 +425,11 @@ void UserData::setName(
 	}
 	const auto newFullName = langFullName(firstName, lastName);
 	updateNameDelayed(newFullName, newPhoneName, newUsername);
+	// A role-only change leaves the visible name (and its search index) intact.
+	if (lastName != previousLastName
+		&& ClientBadge::MarkedRole(lastName) != ClientBadge::MarkedRole(previousLastName)) {
+		session().changes().peerUpdated(this, UpdateFlag::Name);
+	}
 }
 
 void UserData::setUsernames(const Data::Usernames &newUsernames) {

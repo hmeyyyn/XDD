@@ -284,7 +284,8 @@ not_null<Button*> AddButtonWithAbout(
 	rpl::producer<QString> title,
 	rpl::producer<QString> about,
 	const style::SettingsButton &buttonStyle,
-	const style::FlatLabel &titleStyle);
+	const style::FlatLabel &titleStyle,
+	const style::FlatLabel &aboutStyle);
 not_null<Button*> AddButtonWithLabel(
 	not_null<Ui::VerticalLayout*> container,
 	rpl::producer<QString> text,

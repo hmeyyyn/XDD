@@ -68,6 +68,18 @@ namespace {
 const auto kEnhancedSettingsClipboardPrefix
 	= u"yanderegram-settings:"_q;
 
+class Customization final : public Section<Customization> {
+public:
+	Customization(QWidget *parent, not_null<Window::SessionController*> controller)
+	: Section(parent, controller) {
+		Ui::ResizeFitChild(this, Ui::CreateChild<Ui::VerticalLayout>(this));
+	}
+
+	rpl::producer<QString> title() override {
+		return tr::lng_settings_enhanced_customization();
+	}
+};
+
 struct DecodeEnhancedSettingsResult {
 	bool ok = false;
 	QString json;
@@ -667,7 +679,8 @@ struct DecodeEnhancedSettingsResult {
 				buttonStyle,
 				descriptor.restartRequired
 					? st::settingsEnhancedAttentionTitle
-					: st::settingsExperimentalTitle)
+					: st::settingsExperimentalTitle,
+				st::settingsEnhancedAbout)
 			: AddButtonWithIcon(content, (*title)(), buttonStyle);
 		registerHighlight(id, button);
 		return button;
@@ -1126,6 +1139,12 @@ struct DecodeEnhancedSettingsResult {
 	void Enhanced::setupContent() {
 		const auto page = Ui::CreateChild<Ui::VerticalLayout>(this);
 
+		AddButtonWithIcon(
+			page,
+			tr::lng_settings_enhanced_customization(),
+			st::settingsButtonNoIcon)->addClickHandler([=] {
+			showOther(Customization::Id());
+		});
 		setupMessages(AddEnhancedGroup(page, tr::lng_settings_messages()));
 		setupInterface(AddEnhancedGroup(page, tr::lng_settings_interface()));
 		setupBehavior(AddEnhancedGroup(page, tr::lng_settings_behavior()));

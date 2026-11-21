@@ -9,6 +9,9 @@
     "lng_shortcuts_choose_bot_use": "Choose BotUse identity",
 
     "lng_settings_enhanced": "YandereGram",
+    "lng_client_badge_choose": "My badge",
+    "lng_client_badge_none": "None",
+    "lng_settings_enhanced_customization": "Customization",
     "lng_bot_use_settings": "Настройки BotUse",
     "lng_bot_use_about": "Сначала прочитайте короткую инструкцию ниже. Подробнее — в {link}.",
     "lng_bot_use_about_link": "руководстве",

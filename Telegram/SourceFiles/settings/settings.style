@@ -95,6 +95,11 @@ settingsExperimentalAbout: FlatLabel(defaultFlatLabel) {
 		font: font(12px);
 	}
 }
+settingsEnhancedAbout: FlatLabel(settingsExperimentalAbout) {
+	style: TextStyle(defaultTextStyle) {
+		font: font(11px);
+	}
+}
 settingsExperimentalTitlePadding: margins(22px, 9px, 66px, 1px);
 settingsExperimentalAboutPadding: margins(22px, 0px, 66px, 9px);
 settingsOptionDisabled: SettingsButton(settingsButtonNoIcon) {
