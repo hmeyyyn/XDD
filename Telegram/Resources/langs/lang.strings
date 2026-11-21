@@ -9367,6 +9367,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_more_right_action_comments" = "Кнопка комментариев справа";
 "lng_settings_send_comment_after_forwarding" = "Комментарий после пересылки";
 "lng_settings_mpris_call_hangup" = "Звонки из системного плеера";
+"lng_yanderegram_settings_title" = "Настройки YandereGram";
+"lng_client_badge_local_only" = "Выбор сохранён на этом устройстве. Telegram не подтвердил изменение значка в профиле.";
 "lng_settings_enhanced" = "YandereGram";
 "lng_settings_enhanced_customization" = "Кастомизация";
 "lng_bot_use_settings" = "Настройки BotUse";

@@ -63,7 +63,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "support/support_helper.h"
 #include "lang/lang_keys.h"
 #include "core/application.h"
-#include "core/client_badge.h"
 #include "ui/text/text_utilities.h"
 #include "ui/layers/generic_box.h"
 #include "styles/style_layers.h"
@@ -196,7 +195,6 @@ Session::Session(
 	_api->requestFullPeer(_user);
 
 	_api->instance().setUserPhone(_user->phone());
-	ClientBadge::Start(this);
 	_user->loadUserpic();
 	changes().peerFlagsValue(
 		_user,

@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_user.h"
 #include "lang/lang_keys.h"
 #include "main/main_session.h"
+#include "main/main_session_settings.h"
 #include "ui/text/text_utilities.h"
 #include "ui/toast/toast.h"
 #include "window/window_session_controller.h"
@@ -32,8 +33,6 @@ namespace {
 const auto kMarkPrefix = u"\u2063"_q;
 constexpr auto kRoleFirst = ushort(0xFE00);
 constexpr auto kMarkLength = 2;
-
-constexpr auto kMaxAttempts = 2;
 
 [[nodiscard]] QChar RoleChar(Role role) {
 	return QChar(kRoleFirst + ushort(role));
@@ -104,6 +103,11 @@ QString Unmarked(const QString &text) {
 
 Role RoleOfPeer(not_null<PeerData*> peer) {
 	const auto user = peer->asUser();
+	if (user && user->isSelf()) {
+		if (const auto saved = user->session().settings().ownClientBadge()) {
+			return *saved;
+		}
+	}
 	return user ? MarkedRole(user->lastName) : Role::None;
 }
 
@@ -193,57 +197,34 @@ bool ApplyLink(not_null<Main::Session*> session, const QString &command) {
 
 void ChooseOwnRole(not_null<Main::Session*> session, Role role) {
 	const auto user = session->user();
-	const auto lastName = Unmarked(user->lastName);
-	if (MarkedRole(user->lastName) == role) {
+	const auto previous = RoleOfPeer(user);
+	session->settings().setOwnClientBadge(role);
+	session->saveSettingsDelayed();
+	if (previous != role) {
+		session->changes().peerUpdated(user, Data::PeerUpdate::Flag::Name);
+	} else if (MarkedRole(user->lastName) == role) {
 		return;
 	}
-	const auto updated = Marked(lastName, role);
+
+	// Other clients can only see a mark if Telegram retains it in the profile.
+	const auto localOnly = [=] {
+		if (session->settings().ownClientBadge() == role) {
+			Ui::Toast::Show({ .text = { tr::lng_client_badge_local_only(tr::now) } });
+		}
+	};
+	const auto updated = Marked(Unmarked(user->lastName), role);
 	using Flag = MTPaccount_UpdateProfile::Flag;
 	session->api().request(MTPaccount_UpdateProfile(
-		MTP_flags(Flag::f_first_name | Flag::f_last_name),
-		MTP_string(user->firstName),
+		MTP_flags(Flag::f_last_name),
+		MTPstring(),
 		MTP_string(updated),
 		MTPstring()
 	)).done([=](const MTPUser &result) {
 		session->data().processUser(result);
-	}).fail([=] {
-		// A rejected rename leaves a plain name, only the badge is lost.
-	}).send();
-}
-
-void Start(not_null<Main::Session*> session) {
-	const auto user = session->user();
-	const auto attempts = session->lifetime().make_state<int>(0);
-	const auto busy = session->lifetime().make_state<bool>(false);
-	const auto apply = [=] {
-		const auto role = MarkedRole(user->lastName);
-		if (role == Role::None || *busy || *attempts >= kMaxAttempts) {
-			return;
+		if (MarkedRole(user->lastName) != role) {
+			localOnly();
 		}
-		++*attempts;
-		*busy = true;
-		const auto updated = Marked(user->lastName, role);
-		using Flag = MTPaccount_UpdateProfile::Flag;
-		session->api().request(MTPaccount_UpdateProfile(
-			MTP_flags(Flag::f_first_name | Flag::f_last_name),
-			MTP_string(user->firstName),
-			MTP_string(updated),
-			MTPstring()
-		)).done([=](const MTPUser &result) {
-			*busy = false;
-			session->data().processUser(result);
-		}).fail([=] {
-			*busy = false;
-			*attempts = kMaxAttempts;
-		}).send();
-	};
-	apply();
-	session->changes().peerFlagsValue(
-		user,
-		Data::PeerUpdate::Flag::Name
-	) | rpl::on_next([=] {
-		apply();
-	}, session->lifetime());
+	}).fail(localOnly).send();
 }
 
 } // namespace ClientBadge

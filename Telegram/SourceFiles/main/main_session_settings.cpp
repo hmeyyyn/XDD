@@ -17,6 +17,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/send_files_box.h"
 #include "core/application.h"
 #include "core/core_settings.h"
+#include "core/client_badge.h"
 #include "core/version.h"
 #include "data/components/promo_suggestions.h"
 
@@ -101,6 +102,7 @@ QByteArray SessionSettings::serialize() const {
 	for (const auto &id : _extraFavoriteReactions) {
 		size += sizeof(quint64) + Serialize::stringSize(id.emoji());
 	}
+	size += sizeof(qint32); // _ownClientBadge
 	size += sizeof(qint32); // _stashHintShowsCount
 
 	auto result = QByteArray();
@@ -195,6 +197,7 @@ QByteArray SessionSettings::serialize() const {
 			stream << quint64(id.custom()) << id.emoji();
 		}
 		stream << qint32(_stashHintShowsCount);
+		stream << (_ownClientBadge ? qint32(*_ownClientBadge) : qint32(-1));
 	}
 
 	Ensures(result.size() == size);
@@ -274,6 +277,7 @@ void SessionSettings::addFromSerialized(
 	qint32 phoneNumberHidden = 0;
 	std::vector<Data::ReactionId> extraFavoriteReactions;
 	qint32 stashHintShowsCount = 0;
+	qint32 ownClientBadge = -1;
 
 	stream >> versionTag;
 	if (versionTag == kVersionTag) {
@@ -759,6 +763,9 @@ void SessionSettings::addFromSerialized(
 	if (!stream.atEnd()) {
 		stream >> stashHintShowsCount;
 	}
+	if (!stream.atEnd()) {
+		stream >> ownClientBadge;
+	}
 	if (stream.status() != QDataStream::Ok) {
 		LOG(("App Error: "
 			"Bad data for SessionSettings::addFromSerialized()"));
@@ -826,6 +833,10 @@ void SessionSettings::addFromSerialized(
 	_phoneNumberHidden = (phoneNumberHidden == 1);
 	_extraFavoriteReactions = std::move(extraFavoriteReactions);
 	_stashHintShowsCount = stashHintShowsCount;
+	_ownClientBadge.reset();
+	if (ownClientBadge >= 0 && ownClientBadge <= qint32(ClientBadge::Role::Founder)) {
+		_ownClientBadge = ClientBadge::Role(ownClientBadge);
+	}
 
 	if (version < 2) {
 		app.setLastSeenWarningSeen(appLastSeenWarningSeen == 1);
