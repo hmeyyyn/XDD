@@ -32,6 +32,7 @@ enum class Role : uchar {
 	BugHunter = 2,
 	Developer = 3,
 	Founder = 4,
+	User = 5,
 };
 
 [[nodiscard]] QString RoleName(Role role);

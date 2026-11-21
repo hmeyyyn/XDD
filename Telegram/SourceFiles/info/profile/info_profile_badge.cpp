@@ -113,7 +113,7 @@ void Badge::setContent(Content content) {
 		case BadgeType::Direct:
 			return tr::lng_direct_badge(tr::now);
 		case BadgeType::ClientMark:
-			return tr::lng_client_badge_choose(tr::now);
+			return ClientBadge::RoleName(_content.role);
 		}
 		Unexpected("badge type");
 	}());
@@ -226,7 +226,7 @@ void Badge::setContent(Content content) {
 	case BadgeType::ClientMark: {
 		const auto skip = st::infoVerifiedCheckPosition.x();
 		const auto size = st::emojiSize;
-		_view->resize(size + 2 * skip, size + 2 * skip);
+		_view->resize(Ui::ClientMarkWidth(_content.role, size) + 2 * skip, size + 2 * skip);
 	_view->paintRequest(
 		) | rpl::on_next([=, badge = _view.data()]{
 			Painter p(badge);

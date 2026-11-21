@@ -8,6 +8,12 @@
     "lng_shortcuts_edit_link_preview": "Add or edit link preview URL",
     "lng_shortcuts_choose_bot_use": "Choose BotUse identity",
 
+    "lng_yg_role_user": "User",
+    "lng_yg_role_label": "YandereGram badge",
+    "lng_yg_publish_badge": "Show your badge to other YandereGram users? The client will add an invisible marker to the last name in your Telegram profile.",
+    "lng_yg_panel_search": "Search switches",
+    "lng_yg_panel_empty": "No switches here yet.",
+    "lng_yg_panel_favorites": "Favorite settings",
     "lng_yg_save_deleted": "Save deleted messages",
     "lng_yg_save_edits": "Save message edits",
     "lng_yg_ghost_mode": "Ghost mode",

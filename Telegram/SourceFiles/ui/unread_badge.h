@@ -123,6 +123,10 @@ void DrawTextBadge(
 
 // The YandereGram mark next to the name of a peer that also runs the client.
 // `now` drives the animation phase.
+[[nodiscard]] inline int ClientMarkWidth(ClientBadge::Role role, int height) {
+	return role == ClientBadge::Role::Founder ? (height * 23 + 9) / 19 : height;
+}
+
 void DrawClientMark(
 	Painter &p,
 	QRect rect,

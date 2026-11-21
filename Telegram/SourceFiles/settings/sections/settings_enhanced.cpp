@@ -5,6 +5,7 @@ For license and copyright information please follow this link:
 https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
 */
 #include "core/appearance.h"
+#include "settings/sections/settings_bot_use.h"
 #include "settings/sections/settings_appearance.h"
 #include "base/unixtime.h"
 #include "main/main_session_settings.h"
@@ -194,6 +195,12 @@ struct DecodeEnhancedSettingsResult {
 	.title = &tr::lng_yanderegram_settings_title,
 	.icon = &st::menuIconYandereGram,
 }, [](Builder::SectionBuilder &builder) {
+	builder.addSectionButton({
+		.title = tr::lng_bot_use_settings(),
+		.targetSection = BotUseSettingsId(),
+		.icon = { &st::menuIconBot },
+		.keywords = { u"bot use"_q, u"api"_q },
+	});
 	for (const auto option : { EnhancedSettings::OptionId::SaveDeleted,
 			EnhancedSettings::OptionId::SaveEdits, EnhancedSettings::OptionId::GhostMode,
 			EnhancedSettings::OptionId::ExactCounts, EnhancedSettings::OptionId::RelativeOnline,
@@ -739,6 +746,17 @@ struct DecodeEnhancedSettingsResult {
 			not_null<Ui::VerticalLayout*> content,
 			EnhancedSettings::Key<bool> key,
 			std::optional<rpl::producer<QString>> about) {
+		// The repeater control is conditional on the context-menu configuration.
+		if (_panel && key.id != EnhancedSettings::Option::RepeaterReplyToOriginal.id) {
+			const auto &d = EnhancedSettings::DescriptorFor(key.id);
+			if (!about && d.description) about = (*d.description)();
+			const auto widget = _panel->addCard(_building, key,
+				about ? std::move(*about) : rpl::single(QString()), [=] {
+					EnhancedSettings::ApplyOption(controller(), key, !EnhancedSettings::Get(key));
+				});
+			registerHighlight(key, widget);
+			return;
+		}
 		const auto button = addOptionRow(content, key.id, std::move(about));
 		button->toggleOn(
 			EnhancedSettings::Watch(key)
@@ -1200,18 +1218,26 @@ struct DecodeEnhancedSettingsResult {
 	void Enhanced::setupContent() {
 		const auto page = Ui::CreateChild<Ui::VerticalLayout>(this);
 
-		AddButtonWithIcon(
-			page,
-			tr::lng_settings_enhanced_customization(),
-			st::settingsButtonNoIcon)->addClickHandler([=] {
-			showOther(AppearanceId());
-		});
-		setupMessages(AddEnhancedGroup(page, tr::lng_settings_messages()));
-		setupInterface(AddEnhancedGroup(page, tr::lng_settings_interface()));
-		setupBehavior(AddEnhancedGroup(page, tr::lng_settings_behavior()));
-		setupTranslation(AddEnhancedGroup(page, tr::lng_settings_translation()));
-		setupVoiceChat(page);
-		setupOther(AddEnhancedGroup(page, tr::lng_settings_other()));
+		using Wrap = Ui::SlideWrap<Ui::VerticalLayout>;
+		const auto wraps = lifetime().make_state<std::vector<std::pair<PanelPage, Wrap*>>>();
+		_panel = page->add(object_ptr<YanderePanel>(page, [=](PanelPage active, bool searching) {
+			for (const auto &[id, wrap] : *wraps) wrap->toggle(!searching && id == active, anim::type::instant);
+		}, [=](PanelPage id) {
+			showOther(id == PanelPage::BotUse ? BotUseSettingsId() : AppearanceId());
+		}));
+		const auto group = [&](PanelPage id, auto setup) {
+			_building = id;
+			const auto wrap = page->add(object_ptr<Wrap>(page, object_ptr<Ui::VerticalLayout>(page)));
+			wraps->emplace_back(id,wrap);
+			(this->*setup)(wrap->entity());
+		};
+		group(PanelPage::Interface, &Enhanced::setupInterface);
+		group(PanelPage::Messages, &Enhanced::setupMessages);
+		group(PanelPage::Behavior, &Enhanced::setupBehavior);
+		group(PanelPage::Translation, &Enhanced::setupTranslation);
+		group(PanelPage::Calls, &Enhanced::setupVoiceChat);
+		group(PanelPage::Other, &Enhanced::setupOther);
+		_panel->select(_groups.value(controller()->highlightControlId(), PanelPage::Interface));
 
 		Ui::ResizeFitChild(this, page);
 	}
@@ -1233,6 +1259,7 @@ struct DecodeEnhancedSettingsResult {
 			std::optional<EnhancedSettings::OptionId> option,
 			not_null<Ui::RpWidget*> widget,
 			Fn<QString()> shareLink) {
+		_groups.insert(id,_building);
 		_highlightControls.emplace_back(id, widget.get());
 		const auto shared = std::make_shared<Fn<QString()>>(
 			std::move(shareLink));

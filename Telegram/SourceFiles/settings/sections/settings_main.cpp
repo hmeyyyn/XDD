@@ -84,7 +84,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_premium.h"
 #include "settings/sections/settings_privacy_security.h"
 #include "settings/sections/settings_enhanced.h"
-#include "settings/sections/settings_bot_use.h"
 #include "settings/settings_scale_preview.h"
 #include "storage/localstorage.h"
 #include "ui/basic_click_handlers.h"
@@ -519,12 +518,6 @@ void BuildEnhancedSection(SectionBuilder &builder) {
 		.targetSection = EnhancedId(),
 		.icon = { &st::menuIconYandereGram },
 		.keywords = { u"enhanced"_q },
-	});
-	builder.addSectionButton({
-		.title = tr::lng_bot_use_settings(),
-		.targetSection = BotUseSettingsId(),
-		.icon = { &st::menuIconBot },
-		.keywords = { u"bot"_q, u"bot use"_q, u"api"_q },
 	});
 
 	builder.addDivider();

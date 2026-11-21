@@ -9367,6 +9367,12 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_settings_more_right_action_comments" = "Кнопка комментариев справа";
 "lng_settings_send_comment_after_forwarding" = "Комментарий после пересылки";
 "lng_settings_mpris_call_hangup" = "Звонки из системного плеера";
+"lng_yg_role_user" = "User";
+"lng_yg_role_label" = "Значок YandereGram";
+"lng_yg_publish_badge" = "Показать ваш значок другим пользователям YandereGram? Клиент добавит невидимую метку к фамилии в профиле Telegram.";
+"lng_yg_panel_search" = "Поиск переключателей";
+"lng_yg_panel_empty" = "Здесь пока нет переключателей.";
+"lng_yg_panel_favorites" = "Избранные настройки";
 "lng_yg_save_deleted" = "Сохранять удалённые сообщения";
 "lng_yg_save_edits" = "Сохранять историю правок";
 "lng_yg_ghost_mode" = "Режим призрака";

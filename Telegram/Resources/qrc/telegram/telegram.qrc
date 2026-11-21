@@ -5,6 +5,9 @@
     <file alias="art/bg_initial.jpg">../../art/bg_initial.jpg</file>
     <file alias="art/business_logo.png">../../art/business_logo.png</file>
     <file alias="art/affiliate_logo.png">../../art/affiliate_logo.png</file>
+    <file alias="art/badge_user.png">../../art/badge_user.png</file>
+    <file alias="art/badge_founder.png">../../art/badge_founder.png</file>
+    <file alias="art/telegram_service.png">../../art/telegram_service.png</file>
     <file alias="art/logo_256.png">../../art/logo_256.png</file>
     <file alias="art/logo_256_no_margin.png">../../art/logo_256_no_margin.png</file>
     <file alias="art/themeimage.jpg">../../art/themeimage.jpg</file>

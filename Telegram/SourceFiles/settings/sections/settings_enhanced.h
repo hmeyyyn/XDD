@@ -9,6 +9,7 @@ https://github.com/TDesktop-x64/tdesktop/blob/dev/LEGAL
 
 #include "settings/settings_common_session.h"
 #include "settings/settings_type.h"
+#include "settings/sections/settings_yandere_panel.h"
 
 #include <QPointer>
 
@@ -93,6 +94,9 @@ namespace Settings {
 			not_null<Ui::RpWidget*> widget,
 			Fn<QString()> shareLink = {});
 
+		YanderePanel *_panel = nullptr;
+		PanelPage _building = PanelPage::Interface;
+		QMap<QString, PanelPage> _groups;
 		std::vector<std::pair<QString, QPointer<QWidget>>> _highlightControls;
 
 	};

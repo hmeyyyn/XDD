@@ -58,6 +58,7 @@ constexpr auto kMarkLength = 2;
 
 QString RoleName(Role role) {
 	switch (role) {
+	case Role::User: return tr::lng_yg_role_user(tr::now);
 	case Role::Supporter: return tr::lng_client_badge_supporter(tr::now);
 	case Role::BugHunter: return tr::lng_client_badge_bug_hunter(tr::now);
 	case Role::Developer: return tr::lng_client_badge_developer(tr::now);
@@ -68,7 +69,7 @@ QString RoleName(Role role) {
 }
 
 std::optional<Role> RoleFromCode(uchar code) {
-	if (code == 0 || code > uchar(Role::Founder)) {
+	if (code == 0 || code > uchar(Role::User)) {
 		return std::nullopt;
 	}
 	return Role(code);
@@ -104,9 +105,11 @@ QString Unmarked(const QString &text) {
 Role RoleOfPeer(not_null<PeerData*> peer) {
 	const auto user = peer->asUser();
 	if (user && user->isSelf()) {
-		if (const auto saved = user->session().settings().ownClientBadge()) {
+		if (const auto saved = user->session().settings().ownClientBadge(); saved && *saved != Role::None) {
 			return *saved;
 		}
+		const auto mark = MarkedRole(user->lastName);
+		return (mark == Role::None) ? Role::User : mark;
 	}
 	return user ? MarkedRole(user->lastName) : Role::None;
 }
