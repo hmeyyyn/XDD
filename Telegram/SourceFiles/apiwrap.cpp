@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "apiwrap.h"
 
 #include "api/api_authorizations.h"
+#include "core/yg_features.h"
 #include "api/api_attached_stickers.h"
 #include "api/api_blocked_peers.h"
 #include "api/api_chat_invite.h"
@@ -3951,6 +3952,10 @@ void ApiWrap::sendAction(const SendAction &action) {
 	if (!action.options.scheduled
 		&& !action.options.shortcutId
 		&& !action.replaceMediaOf) {
+		if (Core::YgFeatures::GhostDontReadMessages()
+			&& Core::YgFeatures::GhostReadOnSend()) {
+			Core::YgFeatures::AllowReadOnSendOnce(action.history->peer->id.value);
+		}
 		const auto topicRootId = action.replyTo.topicRootId;
 		const auto topic = topicRootId
 			? action.history->peer->forumTopicFor(topicRootId)
@@ -3968,6 +3973,9 @@ void ApiWrap::sendAction(const SendAction &action) {
 		}
 		if (action.originWindow.type != Window::SeparateType::Chat) {
 			action.history->getReadyFor(ShowAtTheEndMsgId);
+		}
+		if (Core::YgFeatures::GhostOfflineAfterSend()) {
+			request(MTPaccount_UpdateStatus(MTP_bool(true))).send();
 		}
 	}
 	_sendActions.fire_copy(action);

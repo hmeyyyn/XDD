@@ -7,6 +7,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/appearance.h"
 #include "core/application.h"
+#include "core/ws_proxy.h"
+#include "core/yg_features.h"
 
 #include "data/data_abstract_structure.h"
 #include "data/data_channel.h"
@@ -364,6 +366,7 @@ void Application::run() {
 	ValidateScale();
 
 	refreshGlobalProxy(); // Depends on app settings being read.
+	WsProxy::Start();
 
 	if (const auto old = Local::oldSettingsVersion(); old < AppVersion) {
 		autoRegisterUrlScheme();
@@ -387,6 +390,7 @@ void Application::run() {
 	Ui::Accessible::Init();
 	Ui::InitTextOptions();
 	Ui::StartCachedCorners();
+	YgFeatures::InstallSmoothScrollFilter();
 	Ui::Emoji::Init();
 	Ui::PreloadTextSpoilerMask(_lifetime);
 	startShortcuts();

@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "api/api_updates.h"
 
 #include "api/api_authorizations.h"
+#include "core/yg_features.h"
 #include "api/api_user_names.h"
 #include "api/api_chat_participants.h"
 #include "api/api_global_privacy.h"
@@ -242,8 +243,10 @@ Updates::Updates(not_null<Main::Session*> session)
 , _byMinChannelTimer([=] { getDifference(); })
 , _failDifferenceTimer([=] { getDifferenceAfterFail(); })
 , _idleFinishTimer([=] { checkIdleFinish(); }) {
-	EnhancedSettings::Changes(EnhancedSettings::Option::GhostMode)
-		| rpl::on_next([=] { updateOnline(); }, _lifetime);
+	rpl::merge(
+		EnhancedSettings::Changes(EnhancedSettings::Option::GhostMode),
+		EnhancedSettings::Changes(EnhancedSettings::Option::GhostNoOnline)
+	) | rpl::on_next([=] { updateOnline(); }, _lifetime);
 	EnhancedSettings::Changes(EnhancedSettings::Option::OnlineSpam)
 		| rpl::on_next([=] { updateOnline(); }, _lifetime);
 	_ptsWaiter.setRequesting(true);
@@ -1023,7 +1026,7 @@ void Updates::updateOnline(crl::time lastNonIdleTime, bool gotOtherOffline) {
 		}
 	}
 	auto ms = crl::now();
-	const auto ghost = EnhancedSettings::Get(EnhancedSettings::Option::GhostMode);
+	const auto ghost = Core::YgFeatures::GhostDontSendOnline();
 	if (ghost) {
 		isOnline = false;
 	} else if (EnhancedSettings::Get(EnhancedSettings::Option::OnlineSpam)

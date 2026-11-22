@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "storage/file_upload.h"
 
 #include "api/api_editing.h"
+#include "core/enhanced_settings.h"
 #include "api/api_send_progress.h"
 #include "boxes/abstract_box.h"
 #include "boxes/premium_limits_box.h"
@@ -37,8 +38,20 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 namespace Storage {
 namespace {
 
-// max 1mb uploaded at the same time in each session
+// max 1mb uploaded at the same time in each session (4mb with UploadBoost)
 constexpr auto kMaxUploadPerSession = 1024 * 1024;
+
+[[nodiscard]] int MaxUploadPerSession() {
+	return EnhancedSettings::Get(EnhancedSettings::Option::UploadBoost)
+		? (4 * kMaxUploadPerSession)
+		: kMaxUploadPerSession;
+}
+
+[[nodiscard]] crl::time UploadRequestInterval() {
+	return EnhancedSettings::Get(EnhancedSettings::Option::UploadBoost)
+		? crl::time(50)
+		: crl::time(250);
+}
 
 constexpr auto kDocumentMaxPartsCountDefault = 4000;
 
@@ -147,6 +160,10 @@ Uploader::Entry::Entry(
 
 void Uploader::Entry::setDocSize(int64 size) {
 	docSize = size;
+	if (EnhancedSettings::Get(EnhancedSettings::Option::UploadBoost)) {
+		setPartSize(kDocumentUploadPartSize4);
+		return;
+	}
 	constexpr auto limit0 = 1024 * 1024;
 	constexpr auto limit1 = 32 * limit0;
 	if (docSize >= limit0 || !setPartSize(kDocumentUploadPartSize0)) {
@@ -802,7 +819,7 @@ auto Uploader::sendDocPart(not_null<Entry*> entry, uchar dcIndex)
 	const auto itemId = entry->itemId;
 	const auto alreadySent = _sentPerDcIndex[dcIndex];
 	const auto willProbablyBeSent = entry->docPartSize;
-	if (alreadySent + willProbablyBeSent > kMaxUploadPerSession) {
+	if (alreadySent + willProbablyBeSent > MaxUploadPerSession()) {
 		return SendResult::DcIndexFull;
 	}
 
@@ -848,7 +865,7 @@ auto Uploader::sendSlicedPart(not_null<Entry*> entry, uchar dcIndex)
 	const auto itemId = entry->itemId;
 	const auto alreadySent = _sentPerDcIndex[dcIndex];
 	const auto willBeSent = entry->parts->at(entry->partsSent).size();
-	if (alreadySent + willBeSent >= kMaxUploadPerSession) {
+	if (alreadySent + willBeSent >= MaxUploadPerSession()) {
 		return SendResult::DcIndexFull;
 	}
 
@@ -909,7 +926,7 @@ void Uploader::maybeSend() {
 	if (usedDcIndices.empty()) {
 		_nextTimer.cancel();
 	} else {
-		_nextTimer.callOnce(kUploadRequestInterval);
+		_nextTimer.callOnce(UploadRequestInterval());
 	}
 }
 

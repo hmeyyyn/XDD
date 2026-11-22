@@ -118,6 +118,7 @@ void FillPollOptionPage(
 void AttachPollOptionTabs(
 	not_null<Ui::PopupMenu*> menu,
 	QPoint desiredPosition);
+void PrependQuickContextActions(not_null<Ui::PopupMenu*> menu);
 
 [[nodiscard]] std::optional<QString> CurrentVoiceTimecode(FullMsgId itemId);
 [[nodiscard]] rpl::producer<QString> VoiceTimecodeUpdates(FullMsgId itemId);

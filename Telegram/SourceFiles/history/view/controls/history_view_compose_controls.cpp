@@ -7,6 +7,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/view/controls/history_view_compose_controls.h"
 
+#include "core/appearance.h"
+#include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "history/view/controls/history_view_bot_menu_button.h"
 
 #include "base/call_delayed.h"
@@ -3600,6 +3603,24 @@ bool ComposeControls::suppressSendAction() const {
 }
 
 void ComposeControls::fieldChanged() {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::InlineMath)) {
+		static bool evaluatingMath = false;
+		if (!evaluatingMath && _field && _field->rawTextEdit()) {
+			auto cursor = _field->rawTextEdit()->textCursor();
+			const int pos = cursor.position();
+			const auto full = _field->getLastText();
+			if (const auto eval = Core::YgFeatures::EvaluateInlineMath(full, pos)) {
+				evaluatingMath = true;
+				cursor.setPosition(eval->replaceStart);
+				cursor.setPosition(
+					eval->replaceStart + eval->replaceLength,
+					QTextCursor::KeepAnchor);
+				cursor.insertText(eval->replacement);
+				evaluatingMath = false;
+				return;
+			}
+		}
+	}
 	if (_stashHintManager) {
 		const auto save = bool(_textUpdateEvents & TextUpdateEvent::SaveDraft);
 		const auto sendTyping = bool(
@@ -5908,11 +5929,13 @@ void ComposeControls::updateAttachBotsMenu() {
 }
 
 void ComposeControls::paintBackground(QPainter &p, QRect full, QRect clip) {
-	if (_backgroundRect) {
+	if (_backgroundRect || Appearance::IsMaterialV2()) {
 		auto hq = PainterHighQualityEnabler(p);
 		p.setBrush(_st.bg);
-		p.setPen(Qt::NoPen);
-		const auto r = _st.radius;
+		p.setPen(Appearance::IsMaterialV2() ? QPen(st::shadowFg, 1.) : Qt::NoPen);
+		const auto r = Appearance::IsMaterialV2()
+			? std::min(full.height() / 2, st::ConvertScale(22))
+			: _st.radius;
 		if (_commentsShown && !_commentsShown->isHidden()) {
 			p.drawRoundedRect(_commentsShown->geometry(), r, r);
 			full.setLeft(full.left()
@@ -5924,7 +5947,15 @@ void ComposeControls::paintBackground(QPainter &p, QRect full, QRect clip) {
 				- _starsReaction->width()
 				- _st.starsSkip);
 		}
-		p.drawRoundedRect(full, _st.radius, _st.radius);
+		if (Appearance::IsMaterialV2() && !_backgroundRect) {
+			const auto sendGap = _send ? (_send->width() + st::ConvertScale(4)) : 0;
+			full = full.adjusted(
+				st::ConvertScale(8),
+				st::ConvertScale(2),
+				-sendGap,
+				-st::ConvertScale(5));
+		}
+		p.drawRoundedRect(full, r, r);
 	} else {
 		p.fillRect(clip, _st.bg);
 	}
@@ -6850,24 +6881,10 @@ TextWithEntities ComposeControls::prepareTextForEditMsg() const {
 }
 
 void ComposeControls::checkCharsLimitation() {
-	if (!_history || !isEditingMessage()) {
-		_charsLimitation = nullptr;
-		return;
-	}
-	const auto item = _history->owner().message(_header->editMsgId());
-	if (!item) {
-		_charsLimitation = nullptr;
-		return;
-	}
-	const auto hasMediaWithCaption = item->media()
-		&& item->media()->allowsEditCaption();
-	const auto limits = Data::PremiumLimits(&session());
-	const auto maxTextSize = hasMediaWithCaption
-		? limits.captionLengthCurrent()
-		: limits.messageLengthCurrent();
-	const auto remove = Ui::ComputeFieldCharacterCount(_field)
-		- maxTextSize;
-	if (remove > 0) {
+	const auto count = Ui::ComputeFieldCharacterCount(_field);
+	const auto showAlways = EnhancedSettings::Get(
+		EnhancedSettings::Option::ComposerCharCounter);
+	const auto showCount = [&](int value) {
 		if (!_charsLimitation) {
 			using namespace Controls;
 			_charsLimitation = base::make_unique_q<CharactersLimitLabel>(
@@ -6876,7 +6893,36 @@ void ComposeControls::checkCharsLimitation() {
 				style::al_bottom);
 			_charsLimitation->show();
 		}
-		_charsLimitation->setLeft(remove);
+		_charsLimitation->setLeft(value);
+	};
+	if (!_history || !isEditingMessage()) {
+		if (showAlways && count > 0) {
+			showCount(-count);
+		} else {
+			_charsLimitation = nullptr;
+		}
+		return;
+	}
+	const auto item = _history->owner().message(_header->editMsgId());
+	if (!item) {
+		if (showAlways && count > 0) {
+			showCount(-count);
+		} else {
+			_charsLimitation = nullptr;
+		}
+		return;
+	}
+	const auto hasMediaWithCaption = item->media()
+		&& item->media()->allowsEditCaption();
+	const auto limits = Data::PremiumLimits(&session());
+	const auto maxTextSize = hasMediaWithCaption
+		? limits.captionLengthCurrent()
+		: limits.messageLengthCurrent();
+	const auto remove = count - maxTextSize;
+	if (remove > 0) {
+		showCount(remove);
+	} else if (showAlways && count > 0) {
+		showCount(-count);
 	} else {
 		_charsLimitation = nullptr;
 	}

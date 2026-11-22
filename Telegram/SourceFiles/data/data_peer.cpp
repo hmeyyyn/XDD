@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_peer.h"
 
 #include "api/api_sensitive_content.h"
+#include "core/yg_features.h"
 #include "data/data_user.h"
 #include "data/data_chat.h"
 #include "data/data_chat_participant_status.h"
@@ -455,7 +456,12 @@ void PeerData::paintUserpic(
 	}
 	const auto size = context.size;
 	const auto cloud = userpicCloudImage(view);
+	const auto streamerMask = Core::YgFeatures::StreamerHidePrivateChats()
+		&& isUser()
+		&& !isSelf()
+		&& !isServiceUser();
 	const auto shouldLoad = cloud
+		&& !streamerMask
 		&& (!EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)
 			|| isVerified()
 			|| isServiceUser());
@@ -1325,17 +1331,24 @@ ChannelData *PeerData::broadcastMonoforum() const {
 }
 
 const QString &PeerData::topBarNameText() const {
+	const auto streamerPrivate = Core::YgFeatures::StreamerHidePrivateChats()
+		&& isUser()
+		&& !isSelf()
+		&& !isServiceUser();
 	if (const auto to = migrateTo()) {
 		return to->topBarNameText();
 	} else if (const auto user = asUser()) {
-		if (!user->nameOrPhone.isEmpty() && !EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)) {
+		if (!user->nameOrPhone.isEmpty()
+			&& !streamerPrivate
+			&& !EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)) {
 			return user->nameOrPhone;
 		}
 	}
 	if (isLoaded()
 		&& !isServiceUser()
 		&& !isVerified()
-		&& EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)) {
+		&& (streamerPrivate
+			|| EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode))) {
 		if (const auto user = asUser()) {
 			if (user->isInaccessible()) {
 				return _name;
@@ -1368,10 +1381,15 @@ const QString &PeerData::name() const {
 	} else if (const auto broadcast = monoforumBroadcast()) {
 		return broadcast->name();
 	}
+	const auto streamerPrivate = Core::YgFeatures::StreamerHidePrivateChats()
+		&& isUser()
+		&& !isSelf()
+		&& !isServiceUser();
 	if (isLoaded()
 		&& !isServiceUser()
 		&& !isVerified()
-		&& EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)) {
+		&& (streamerPrivate
+			|| EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode))) {
 		if (const auto user = asUser()) {
 			if (user->isInaccessible()) {
 				return _name;

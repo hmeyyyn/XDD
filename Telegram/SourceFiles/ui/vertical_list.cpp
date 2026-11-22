@@ -7,7 +7,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/vertical_list.h"
 
+#include "core/appearance.h"
 #include "lang/lang_text_entity.h"
+#include "ui/painter.h"
 #include "ui/widgets/box_content_divider.h"
 #include "ui/widgets/labels.h"
 #include "ui/wrap/padding_wrap.h"
@@ -15,6 +17,39 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "styles/style_layers.h"
 
 namespace Ui {
+namespace {
+
+class Md3AwareDivider final : public Ui::BoxContentDivider {
+public:
+	using Ui::BoxContentDivider::BoxContentDivider;
+
+protected:
+	void paintEvent(QPaintEvent *e) override {
+		if (!Appearance::IsMaterialV2()) {
+			Ui::BoxContentDivider::paintEvent(e);
+			return;
+		}
+		QPainter p(this);
+		PainterHighQualityEnabler hq(p);
+		p.fillRect(rect(), st::boxDividerBg);
+		const int cap = std::min(height() / 3, st::ConvertScale(5));
+		const int rad = st::ConvertScale(10);
+		if (cap > 0) {
+			p.setPen(Qt::NoPen);
+			p.setBrush(st::boxBg);
+			p.save();
+			p.setClipRect(QRect(0, 0, width(), cap));
+			p.drawRoundedRect(QRect(0, -2 * rad, width(), 2 * rad + cap), rad, rad);
+			p.restore();
+			p.save();
+			p.setClipRect(QRect(0, height() - cap, width(), cap));
+			p.drawRoundedRect(QRect(0, height() - cap, width(), 2 * rad + cap), rad, rad);
+			p.restore();
+		}
+	}
+};
+
+} // namespace
 
 void AddSkip(not_null<Ui::VerticalLayout*> container) {
 	AddSkip(container, st::defaultVerticalListSkip);
@@ -27,7 +62,7 @@ void AddSkip(not_null<Ui::VerticalLayout*> container, int skip) {
 void AddDivider(
 		not_null<Ui::VerticalLayout*> container,
 		const style::DividerBar &st) {
-	container->add(object_ptr<Ui::BoxContentDivider>(
+	container->add(object_ptr<Md3AwareDivider>(
 		container,
 		st::boxDividerHeight,
 		st));

@@ -187,9 +187,52 @@ Descriptor Integer(
 			return &tr::lng_settings_hide_gram_balance_desc;
 		case OptionId::ShowPeerInfo:
 			return &tr::lng_settings_show_peer_info_desc;
+		case OptionId::GhostMode:
+			return &tr::lng_yg_ghost_about;
+		case OptionId::GhostNoRead:
+			return &tr::lng_yg_ghost_no_read_desc;
+		case OptionId::GhostNoStories:
+			return &tr::lng_yg_ghost_no_stories_desc;
+		case OptionId::GhostNoOnline:
+			return &tr::lng_yg_ghost_no_online_desc;
+		case OptionId::GhostNoTyping:
+			return &tr::lng_yg_ghost_no_typing_desc;
+		case OptionId::GhostOfflineAfterSend:
+			return &tr::lng_yg_ghost_offline_send_desc;
+		case OptionId::GhostReadOnSend:
+			return &tr::lng_yg_ghost_read_send_desc;
+		case OptionId::StreamerMode:
+			return &tr::lng_yg_streamer_mode_desc;
+		case OptionId::StreamerCaptureProtection:
+			return &tr::lng_yg_streamer_capture_desc;
+		case OptionId::StreamerHideSensitive:
+			return &tr::lng_yg_streamer_sensitive_desc;
+		case OptionId::StreamerHidePrivateChats:
+			return &tr::lng_yg_streamer_private_desc;
+		case OptionId::StreamerMuteNotifications:
+			return &tr::lng_yg_streamer_notifications_desc;
+		case OptionId::InlineMath:
+			return &tr::lng_yg_inline_math_desc;
+		case OptionId::ComposerCharCounter:
+			return &tr::lng_yg_char_counter_desc;
+		case OptionId::FilterZalgo:
+			return &tr::lng_yg_filter_zalgo_desc;
+		case OptionId::QuickContextActions:
+			return &tr::lng_yg_quick_actions_desc;
+		case OptionId::DoubleClickAction:
+			return &tr::lng_yg_double_click_desc;
+		case OptionId::ShowRegDateAndDc:
+			return &tr::lng_yg_reg_date_dc_desc;
+		case OptionId::DownloadBoost:
+			return &tr::lng_yg_download_boost_desc;
+		case OptionId::UploadBoost:
+			return &tr::lng_yg_upload_boost_desc;
+		case OptionId::WsProxyEnabled:
+			return &tr::lng_yg_ws_proxy_desc;
+		case OptionId::FeedHideArchived:
+			return &tr::lng_yg_feed_hide_archived_desc;
 		case OptionId::SaveDeleted:
 		case OptionId::SaveEdits:
-		case OptionId::GhostMode:
 		case OptionId::ExactCounts:
 		case OptionId::RelativeOnline:
 		case OptionId::ExtendedStickers:
@@ -433,6 +476,60 @@ const DescriptorList &DescriptorData() {
 			&tr::lng_yg_relative_online, "enhanced/relative-online"),
 		Bool(OptionId::ExtendedStickers, "extended_stickers",
 			&tr::lng_yg_extended_stickers, "enhanced/extended-stickers"),
+		Bool(OptionId::GhostNoRead, "ghost_no_read",
+			&tr::lng_yg_ghost_no_read, "enhanced/ghost-no-read"),
+		Bool(OptionId::GhostNoStories, "ghost_no_stories",
+			&tr::lng_yg_ghost_no_stories, "enhanced/ghost-no-stories"),
+		Bool(OptionId::GhostNoOnline, "ghost_no_online",
+			&tr::lng_yg_ghost_no_online, "enhanced/ghost-no-online"),
+		Bool(OptionId::GhostNoTyping, "ghost_no_typing",
+			&tr::lng_yg_ghost_no_typing, "enhanced/ghost-no-typing"),
+		Bool(OptionId::GhostOfflineAfterSend, "ghost_offline_after_send",
+			&tr::lng_yg_ghost_offline_send, "enhanced/ghost-offline-after-send"),
+		Bool(OptionId::GhostReadOnSend, "ghost_read_on_send",
+			&tr::lng_yg_ghost_read_send, "enhanced/ghost-read-on-send",
+			{}, false, true),
+		Bool(OptionId::StreamerMode, "streamer_mode",
+			&tr::lng_yg_streamer_mode, "enhanced/streamer-mode"),
+		Bool(OptionId::StreamerCaptureProtection, "streamer_capture_protection",
+			&tr::lng_yg_streamer_capture, "enhanced/streamer-capture",
+			{}, false, true),
+		Bool(OptionId::StreamerHideSensitive, "streamer_hide_sensitive",
+			&tr::lng_yg_streamer_sensitive, "enhanced/streamer-sensitive",
+			{}, false, true),
+		Bool(OptionId::StreamerHidePrivateChats, "streamer_hide_private_chats",
+			&tr::lng_yg_streamer_private, "enhanced/streamer-private",
+			{}, false, true),
+		Bool(OptionId::StreamerMuteNotifications, "streamer_mute_notifications",
+			&tr::lng_yg_streamer_notifications, "enhanced/streamer-notifications",
+			{}, false, true),
+		Bool(OptionId::InlineMath, "inline_math",
+			&tr::lng_yg_inline_math, "enhanced/inline-math",
+			{}, false, true),
+		Bool(OptionId::ComposerCharCounter, "composer_char_counter",
+			&tr::lng_yg_char_counter, "enhanced/composer-char-counter"),
+		Bool(OptionId::FilterZalgo, "filter_zalgo",
+			&tr::lng_yg_filter_zalgo, "enhanced/filter-zalgo",
+			{}, false, true),
+		Bool(OptionId::QuickContextActions, "quick_context_actions",
+			&tr::lng_yg_quick_actions, "enhanced/quick-context-actions",
+			{}, false, true),
+		Integer(OptionId::DoubleClickAction, "double_click_action",
+			&tr::lng_yg_double_click, "enhanced/double-click-action",
+			{ .minimum = 0, .maximum = 6 }),
+		Bool(OptionId::ShowRegDateAndDc, "show_reg_date_dc",
+			&tr::lng_yg_reg_date_dc, "enhanced/show-reg-date-dc",
+			{}, false, true),
+		Integer(OptionId::DownloadBoost, "download_boost",
+			&tr::lng_yg_download_boost, "enhanced/download-boost",
+			{ .minimum = 0, .maximum = 2 }),
+		Bool(OptionId::UploadBoost, "upload_boost",
+			&tr::lng_yg_upload_boost, "enhanced/upload-boost"),
+		Bool(OptionId::WsProxyEnabled, "ws_proxy_enabled",
+			&tr::lng_yg_ws_proxy, "enhanced/ws-proxy"),
+		Bool(OptionId::FeedHideArchived, "feed_hide_archived",
+			&tr::lng_yg_feed_hide_archived, "enhanced/feed-hide-archived",
+			{}, false, true),
 	});
 	return result;
 }

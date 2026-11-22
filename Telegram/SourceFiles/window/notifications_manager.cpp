@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "window/notifications_manager.h"
 
 #include "base/options.h"
+#include "core/yg_features.h"
 #include "base/platform/base_platform_info.h"
 #include "base/qt/qt_key_modifiers.h"
 #include "platform/platform_notifications_manager.h"
@@ -444,6 +445,10 @@ void System::schedule(Data::ItemNotification notification) {
 	const auto item = notification.item;
 	const auto type = notification.type;
 	const auto thread = item->notificationThread();
+	if (Core::YgFeatures::StreamerMuteNotifications()) {
+		thread->popNotification(notification);
+		return;
+	}
 	const auto skip = skipNotification(notification);
 	if (skip.value == SkipState::Skip) {
 		thread->popNotification(notification);

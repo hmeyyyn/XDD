@@ -19,6 +19,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_saved_sublist.h"
 #include "core/application.h"
 #include "core/core_settings.h"
+#include "core/yg_features.h"
 #include "mainwidget.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
@@ -330,8 +331,10 @@ void Entry::notifyUnreadStateChange(const UnreadState &wasState) {
 
 const Ui::Text::String &Entry::chatListNameText() const {
 	const auto version = chatListNameVersion();
-	if (_chatListNameVersion < version || EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode) != _previousMode) {
-		_previousMode = EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode);
+	const auto maskedMode = EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)
+		|| Core::YgFeatures::StreamerHidePrivateChats();
+	if (_chatListNameVersion < version || maskedMode != _previousMode) {
+		_previousMode = maskedMode;
 		_chatListNameVersion = version;
 		_chatListNameText.setText(
 			st::semiboldTextStyle,

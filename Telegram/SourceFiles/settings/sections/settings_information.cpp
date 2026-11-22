@@ -613,15 +613,38 @@ void SetupRows(
 		if (controller->showFrozenError()) {
 			return;
 		}
-		const auto role = ClientBadge::RoleOfPeer(self);
-		if (role != ClientBadge::Role::None && ClientBadge::MarkedRole(self->lastName) == role) {
-			ClientBadge::ShowRoleToast(container, role);
-			return;
+		static const auto kRoles = std::array<ClientBadge::Role, 6>{
+			ClientBadge::Role::Founder,
+			ClientBadge::Role::Developer,
+			ClientBadge::Role::BugHunter,
+			ClientBadge::Role::Supporter,
+			ClientBadge::Role::User,
+			ClientBadge::Role::None,
+		};
+		const auto current = ClientBadge::RoleOfPeer(self);
+		auto selected = 4;
+		auto options = std::vector<QString>();
+		options.reserve(kRoles.size());
+		for (auto i = 0; i != int(kRoles.size()); ++i) {
+			const auto role = kRoles[i];
+			options.push_back((role == ClientBadge::Role::None)
+				? tr::lng_client_badge_none(tr::now)
+				: ClientBadge::RoleName(role));
+			if (role == current) {
+				selected = i;
+			}
 		}
-		controller->show(Ui::MakeConfirmBox({
-			.text = tr::lng_yg_publish_badge(),
-			.confirmed = [=] { ClientBadge::ChooseOwnRole(session,
-				role == ClientBadge::Role::None ? ClientBadge::Role::User : role); },
+		controller->show(Box([=](not_null<Ui::GenericBox*> box) {
+			SingleChoiceBox(box, {
+				.title = tr::lng_yg_role_label(),
+				.options = options,
+				.initialSelection = selected,
+				.callback = [=](int index) {
+					if (index >= 0 && index < int(kRoles.size())) {
+						ClientBadge::ChooseOwnRole(session, kRoles[index]);
+					}
+				},
+			});
 		}));
 	});
 

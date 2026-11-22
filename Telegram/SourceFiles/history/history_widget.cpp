@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "styles/style_menu_icons.h"
 #include "core/appearance.h"
+#include "core/yg_features.h"
 #include "history/history_widget.h"
 
 #include "api/api_compose_with_ai.h"
@@ -2393,6 +2394,24 @@ bool HistoryWidget::suppressSendAction() const {
 }
 
 void HistoryWidget::fieldChanged() {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::InlineMath)) {
+		static bool evaluatingMath = false;
+		if (!evaluatingMath && _field && _field->rawTextEdit()) {
+			auto cursor = _field->rawTextEdit()->textCursor();
+			const int pos = cursor.position();
+			const auto full = _field->getLastText();
+			if (const auto eval = Core::YgFeatures::EvaluateInlineMath(full, pos)) {
+				evaluatingMath = true;
+				cursor.setPosition(eval->replaceStart);
+				cursor.setPosition(
+					eval->replaceStart + eval->replaceLength,
+					QTextCursor::KeepAnchor);
+				cursor.insertText(eval->replacement);
+				evaluatingMath = false;
+				return;
+			}
+		}
+	}
 	if (_stashHintManager) {
 		const auto save = bool(
 			_textUpdateEvents & TextUpdateEvent::SaveDraft);
@@ -11205,13 +11224,34 @@ void HistoryWidget::checkCharsCount() {
 }
 
 void HistoryWidget::checkCharsLimitation() {
+	const auto count = _fieldCharsCountManager.count();
+	const auto showAlways = EnhancedSettings::Get(
+		EnhancedSettings::Option::ComposerCharCounter);
+	const auto showCount = [&](int value) {
+		if (!_charsLimitation) {
+			_charsLimitation = base::make_unique_q<CharactersLimitLabel>(
+				this,
+				_send.get(),
+				style::al_bottom);
+			_charsLimitation->show();
+		}
+		_charsLimitation->setLeft(value);
+	};
 	if (!_history || !_editMsgId) {
-		_charsLimitation = nullptr;
+		if (showAlways && count > 0) {
+			showCount(-count);
+		} else {
+			_charsLimitation = nullptr;
+		}
 		return;
 	}
 	const auto item = session().data().message(_history->peer, _editMsgId);
 	if (!item) {
-		_charsLimitation = nullptr;
+		if (showAlways && count > 0) {
+			showCount(-count);
+		} else {
+			_charsLimitation = nullptr;
+		}
 		return;
 	}
 	const auto hasMediaWithCaption = item->media()
@@ -11220,16 +11260,11 @@ void HistoryWidget::checkCharsLimitation() {
 	const auto maxTextSize = hasMediaWithCaption
 		? limits.captionLengthCurrent()
 		: limits.messageLengthCurrent();
-	const auto remove = _fieldCharsCountManager.count() - maxTextSize;
+	const auto remove = count - maxTextSize;
 	if (remove > 0) {
-		if (!_charsLimitation) {
-			_charsLimitation = base::make_unique_q<CharactersLimitLabel>(
-				this,
-				_send.get(),
-				style::al_bottom);
-			_charsLimitation->show();
-		}
-		_charsLimitation->setLeft(remove);
+		showCount(remove);
+	} else if (showAlways && count > 0) {
+		showCount(-count);
 	} else {
 		_charsLimitation = nullptr;
 	}
@@ -12206,7 +12241,23 @@ void HistoryWidget::drawField(Painter &p, const QRect &rect) {
 	}
 	p.setInactive(
 		controller()->isGifPausedAtLeastFor(Window::GifPauseReason::Any));
-	p.fillRect(myrtlrect(0, backy, width(), backh), st::historyReplyBg);
+	if (Appearance::IsMaterialV2()) {
+		PainterHighQualityEnabler hq(p);
+		const auto mx = st::ConvertScale(8);
+		const auto mb = st::ConvertScale(5);
+		const auto sendGap = _send ? (_send->width() + st::ConvertScale(4)) : 0;
+		const auto pill = myrtlrect(
+			mx,
+			backy + st::ConvertScale(2),
+			std::max(80, width() - mx - sendGap),
+			std::max(28, backh - mb - st::ConvertScale(2)));
+		const auto rad = std::min(pill.height() / 2, st::ConvertScale(22));
+		p.setBrush(st::historyReplyBg);
+		p.setPen(QPen(st::shadowFg, 1.));
+		p.drawRoundedRect(pill, rad, rad);
+	} else {
+		p.fillRect(myrtlrect(0, backy, width(), backh), st::historyReplyBg);
+	}
 
 	const auto media = (!_previewDrawPreview && drawMsgText)
 		? drawMsgText->media()

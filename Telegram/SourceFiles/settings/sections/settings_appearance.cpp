@@ -3,6 +3,7 @@
 #include "settings/sections/settings_appearance.h"
 
 #include "core/appearance.h"
+#include "core/material_color_picker.h"
 #include "core/application.h"
 #include "core/core_settings.h"
 #include "settings/settings_common_session.h"
@@ -21,7 +22,6 @@
 #include "ui/widgets/labels.h"
 #include "ui/wrap/vertical_layout.h"
 #include "styles/style_settings.h"
-#include <QtWidgets/QColorDialog>
 #include <QtWidgets/QFontDialog>
 #include <QtGui/QPainter>
 
@@ -49,6 +49,8 @@ struct Choice {
 };
 const std::vector<Choice> &Choices() {
 	static const auto rows = std::vector<Choice>{
+		{ Key::ClientStyle, Group::Palette, &tr::lng_look_client_style,
+			{ &tr::lng_look_client_style_v1, &tr::lng_look_client_style_v2, &tr::lng_look_client_style_liquid } },
 		{ Key::Meta, Group::Messages, &tr::lng_look_meta,
 			{ &tr::lng_look_value_default, &tr::lng_look_value_compact_time, &tr::lng_look_value_time_only, &tr::lng_look_own_line } },
 		{ Key::Menu, Group::Messages, &tr::lng_look_menu,
@@ -151,12 +153,13 @@ private:
 	}
 };
 
-void PickColor(QWidget *parent, QColor start, Fn<void(QColor)> apply) {
-	auto dialog = new QColorDialog(start.isValid() ? start : st::windowBgActive->c, parent);
-	dialog->setAttribute(Qt::WA_DeleteOnClose);
-	dialog->setWindowModality(Qt::WindowModal);
-	QObject::connect(dialog, &QColorDialog::colorSelected, dialog, [=](QColor c) { apply(c); });
-	dialog->show();
+void PickColor(QWidget *parent, QColor start, Fn<void(QColor)> apply, bool allowFullTheme = true) {
+	Core::ShowMaterialColorPicker(
+		parent,
+		start.isValid() ? start : st::windowBgActive->c,
+		std::move(apply),
+		allowFullTheme,
+		true);
 }
 
 void PaletteControls(not_null<Ui::VerticalLayout*> page) {
@@ -200,7 +203,13 @@ public:
 					for (const auto v : choice->values) values.push_back((*v)(tr::now));
 					SingleChoiceBox(box, { .title = (*choice->title)(), .options = std::move(values),
 						.initialSelection = Appearance::Get(choice->key),
-						.callback = [=](int i) { Appearance::Set(choice->key, i); } });
+						.callback = [=](int i) {
+							if (choice->key == Key::ClientStyle && i == 2) {
+								controller->showToast(tr::lng_look_liquid_glass_wip(tr::now));
+								return;
+							}
+							Appearance::Set(choice->key, i);
+						} });
 				}));
 			});
 		}

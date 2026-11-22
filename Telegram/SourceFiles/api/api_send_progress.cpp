@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "api/api_send_progress.h"
 
 #include "bot_use/bot_use_manager.h"
@@ -172,7 +173,7 @@ bool SendProgressManager::updated(const Key &key, bool doing) {
 }
 
 void SendProgressManager::send(const Key &key, int progress) {
-	if (EnhancedSettings::Get(EnhancedSettings::Option::GhostMode) || skipRequest(key)) {
+	if (Core::YgFeatures::GhostDontSendTyping() || skipRequest(key)) {
 		return;
 	}
 	using Type = SendProgressType;

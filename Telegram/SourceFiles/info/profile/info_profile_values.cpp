@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -13,6 +13,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "info/profile/info_profile_badge.h"
 #include "core/application.h"
 #include "core/click_handler_types.h"
+#include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "countries/countries_instance.h"
 #include "main/main_session.h"
 #include "main/main_session_settings.h"
@@ -134,11 +136,19 @@ rpl::producer<int32> ColorIdValue(not_null<Data::ForumTopic*> topic) {
 rpl::producer<TextWithEntities> PhoneValue(not_null<UserData*> user) {
 	return rpl::merge(
 		Countries::Instance().updated(),
+		EnhancedSettings::Changes(EnhancedSettings::Option::StreamerMode),
+		EnhancedSettings::Changes(EnhancedSettings::Option::StreamerHideSensitive),
 		user->session().changes().peerFlagsValue(
 			user,
 			UpdateFlag::PhoneNumber) | rpl::to_empty
 	) | rpl::map([=] {
-		return tr::marked(Ui::FormatPhone(user->phone()));
+		const auto formatted = Ui::FormatPhone(user->phone());
+		if (formatted.isEmpty()) {
+			return TextWithEntities();
+		}
+		return tr::marked(Core::YgFeatures::StreamerHideSensitive()
+			? u"+••• ••• ••••"_q
+			: formatted);
 	});
 }
 
@@ -194,13 +204,22 @@ void CopyPhoneToClipboard(rpl::producer<TextWithEntities> phone) {
 rpl::producer<TextWithEntities> UsernameValue(
 		not_null<PeerData*> peer,
 		bool primary) {
-	return (primary
-		? PlainPrimaryUsernameValue(peer)
-		: (PlainUsernameValue(peer) | rpl::type_erased)
-	) | rpl::map([](QString &&username) {
-		return username.isEmpty()
-			? tr::marked()
-			: tr::marked('@' + username);
+	return rpl::combine(
+		primary
+			? PlainPrimaryUsernameValue(peer)
+			: (PlainUsernameValue(peer) | rpl::type_erased),
+		rpl::single(rpl::empty) | rpl::then(rpl::merge(
+			EnhancedSettings::Changes(EnhancedSettings::Option::StreamerMode),
+			EnhancedSettings::Changes(EnhancedSettings::Option::StreamerHideSensitive)))
+	) | rpl::map([peer](QString &&username, auto) {
+		if (username.isEmpty()) {
+			return tr::marked();
+		}
+		if (Core::YgFeatures::StreamerHideSensitive()
+			&& (peer->isSelf() || peer->isUser())) {
+			return tr::marked(u"@••••••••"_q);
+		}
+		return tr::marked('@' + username);
 	});
 }
 

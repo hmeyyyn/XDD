@@ -18,8 +18,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "calls/calls_box_controller.h"
 #include "calls/calls_instance.h"
 #include "core/app_name.h"
+#include "core/appearance.h"
 #include "core/application.h"
 #include "core/click_handler_types.h"
+#include "settings/sections/settings_yandere_panel.h"
+#include "styles/style_menu_icons.h"
 #include "data/data_changes.h"
 #include "data/data_document_media.h"
 #include "data/data_folder.h"
@@ -795,6 +798,21 @@ void MainMenu::setupMenu() {
 		controller->showSettings();
 	});
 
+	addAction(
+		tr::lng_yanderegram_settings_title(),
+		{ &st::menuIconYandereGram }
+	)->setClickedCallback([=] {
+		controller->window().hideSettingsAndLayer(anim::type::instant);
+		Settings::ShowYandereWindow(controller);
+	});
+
+	addAction(
+		tr::lng_yg_cat_feed(),
+		{ &st::menuIconChannel }
+	)->setClickedCallback([=] {
+		Settings::ShowChannelsFeedBox(controller);
+	});
+
 	_nightThemeToggle = addAction(
 		tr::lng_menu_night_mode(),
 		{ &st::menuIconNightMode }
@@ -852,6 +870,28 @@ void MainMenu::setupMenu() {
 			EnhancedSettings::Option::ScreenshotMode,
 			screenShotMode);
 	}, lifetime());
+
+	const auto ghostToggle = addAction(
+		tr::lng_yg_ghost_mode(),
+		{ &st::menuIconYandereGram }
+	)->toggleOn(EnhancedSettings::Watch(EnhancedSettings::Option::GhostMode));
+	ghostToggle->toggledChanges(
+	) | rpl::filter([](bool on) {
+		return (on != EnhancedSettings::Get(EnhancedSettings::Option::GhostMode));
+	}) | rpl::on_next([=](bool on) {
+		EnhancedSettings::ApplyOption(controller, EnhancedSettings::Option::GhostMode, on);
+	}, ghostToggle->lifetime());
+
+	const auto streamerToggle = addAction(
+		tr::lng_yg_streamer_mode(),
+		{ &st::menuIconLock }
+	)->toggleOn(EnhancedSettings::Watch(EnhancedSettings::Option::StreamerMode));
+	streamerToggle->toggledChanges(
+	) | rpl::filter([](bool on) {
+		return (on != EnhancedSettings::Get(EnhancedSettings::Option::StreamerMode));
+	}) | rpl::on_next([=](bool on) {
+		EnhancedSettings::ApplyOption(controller, EnhancedSettings::Option::StreamerMode, on);
+	}, streamerToggle->lifetime());
 
 	Core::App().settings().systemDarkModeValue(
 	) | rpl::on_next([=](std::optional<bool> darkMode) {
@@ -953,7 +993,16 @@ void MainMenu::paintEvent(QPaintEvent *e) {
 	const auto clip = e->rect();
 	const auto cover = QRect(0, 0, width(), st::mainMenuCoverHeight);
 
-	p.fillRect(clip, st::mainMenuBg);
+	if (Appearance::IsMaterialV2()) {
+		p.fillRect(clip, st::windowBg);
+		PainterHighQualityEnabler hq(p);
+		const auto rad = st::ConvertScale(18);
+		p.setPen(Qt::NoPen);
+		p.setBrush(st::mainMenuBg);
+		p.drawRoundedRect(QRect(-rad, 0, width() + rad, height()), rad, rad);
+	} else {
+		p.fillRect(clip, st::mainMenuBg);
+	}
 	if (cover.intersects(clip)) {
 		drawName(p);
 	}

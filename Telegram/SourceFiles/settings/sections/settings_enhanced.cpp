@@ -818,6 +818,25 @@ struct DecodeEnhancedSettingsResult {
 			const auto stored = EnhancedSettings::Get(key);
 			return (!stored && zeroAsMaximum) ? constraint.maximum : stored;
 		};
+		if (_panel) {
+			const auto &d = EnhancedSettings::DescriptorFor(key.id);
+			const auto desc = d.description ? (*d.description)(tr::now) : QString();
+			const auto widget = _panel->addSliderCard(
+				_building,
+				EnhancedSettings::ControlId(key.id).toUtf8(),
+				EnhancedSettings::OptionTitle(key.id),
+				desc,
+				constraint.minimum,
+				constraint.maximum,
+				displayValue,
+				label,
+				[=](int val) {
+					EnhancedSettings::ApplyOption(controller(), key, val);
+				},
+				EnhancedSettings::Changes(key));
+			registerHighlight(key, widget);
+			return;
+		}
 		const auto valueLabel = content->lifetime(
 		).make_state<rpl::event_stream<QString>>();
 		addLabeledOption(
