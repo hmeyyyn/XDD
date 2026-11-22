@@ -2905,14 +2905,34 @@ void HistoryInner::mouseDoubleClickEvent(QMouseEvent *e) {
 		&& e->button() == Qt::LeftButton) {
 		if (const auto view = Element::Moused()) {
 			mouseActionCancel();
-			switch (HistoryView::CurrentQuickAction()) {
-			case HistoryView::DoubleClickQuickAction::Reply: {
-				_widget->replyToMessage(view->data());
-			} break;
-			case HistoryView::DoubleClickQuickAction::React: {
+			const auto item = view->data();
+			const int customDbl = EnhancedSettings::Get(
+				EnhancedSettings::Option::DoubleClickAction);
+			if (customDbl == 1) {
+				_widget->replyToMessage(item);
+			} else if (customDbl == 2) {
 				toggleFavoriteReaction(view);
-			} break;
-			default: break;
+			} else if (customDbl == 3) {
+				const auto txt = item->originalText().text;
+				if (!txt.isEmpty()) {
+					TextUtilities::SetClipboardText({ txt });
+				}
+			} else if (customDbl == 4) {
+				if (item->allowsEdit(base::unixtime::now())) {
+					_widget->editMessage(item, TextSelection());
+				} else {
+					_widget->replyToMessage(item);
+				}
+			} else {
+				switch (HistoryView::CurrentQuickAction()) {
+				case HistoryView::DoubleClickQuickAction::Reply: {
+					_widget->replyToMessage(item);
+				} break;
+				case HistoryView::DoubleClickQuickAction::React: {
+					toggleFavoriteReaction(view);
+				} break;
+				default: break;
+				}
 			}
 		}
 	}
@@ -4456,6 +4476,7 @@ void HistoryInner::showContextMenu(QContextMenuEvent *e, bool showFromTouch) {
 		_menu = nullptr;
 		return;
 	}
+	HistoryView::PrependQuickContextActions(_menu.get());
 	HistoryView::AttachPollOptionTabs(_menu.get(), desiredPosition);
 	if (attached == AttachSelectorResult::Attached) {
 		_menu->popupPrepared();

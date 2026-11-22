@@ -8,6 +8,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "history/history_item.h"
 
 #include "api/api_premium.h"
+#include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "api/api_sensitive_content.h"
 #include "api/api_transcribes.h"
 #include "bot_use/bot_use_chat_state.h"
@@ -5073,6 +5075,9 @@ void HistoryItem::clearRichPage() {
 }
 
 void HistoryItem::setTextValue(TextWithEntities text, bool force) {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::FilterZalgo)) {
+		Core::YgFeatures::FilterZalgoEntities(text);
+	}
 	if (const auto processId = Spellchecker::TryHighlightSyntax(text)) {
 		_flags |= MessageFlag::InHighlightProcess;
 		history()->owner().registerHighlightProcess(processId, this);

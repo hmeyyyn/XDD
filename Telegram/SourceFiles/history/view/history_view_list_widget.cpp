@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/appearance.h"
+#include "core/enhanced_settings.h"
 #include "history/view/history_view_list_widget.h"
 
 #include "bot_use/bot_use_sending.h"
@@ -4449,14 +4450,34 @@ void ListWidget::mouseDoubleClickEvent(QMouseEvent *e) {
 		&& (_overElement->data()->isRegular()
 			|| CanReplyToEphemeral(_overElement->data()))) {
 		mouseActionCancel();
-		switch (CurrentQuickAction()) {
-		case DoubleClickQuickAction::Reply: {
-			replyToMessageRequestNotify({ _overElement->data()->fullId() });
-		} break;
-		case DoubleClickQuickAction::React: {
+		const auto item = _overElement->data();
+		const int customDbl = EnhancedSettings::Get(
+			EnhancedSettings::Option::DoubleClickAction);
+		if (customDbl == 1) {
+			replyToMessageRequestNotify({ item->fullId() });
+		} else if (customDbl == 2) {
 			toggleFavoriteReaction(_overElement);
-		} break;
-		default: break;
+		} else if (customDbl == 3) {
+			const auto txt = item->originalText().text;
+			if (!txt.isEmpty()) {
+				TextUtilities::SetClipboardText({ txt });
+			}
+		} else if (customDbl == 4) {
+			if (item->allowsEdit(base::unixtime::now())) {
+				editMessageRequestNotify(item->fullId());
+			} else {
+				replyToMessageRequestNotify({ item->fullId() });
+			}
+		} else {
+			switch (CurrentQuickAction()) {
+			case DoubleClickQuickAction::Reply: {
+				replyToMessageRequestNotify({ item->fullId() });
+			} break;
+			case DoubleClickQuickAction::React: {
+				toggleFavoriteReaction(_overElement);
+			} break;
+			default: break;
+			}
 		}
 	}
 }

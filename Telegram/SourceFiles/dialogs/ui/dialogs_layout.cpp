@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/appearance.h"
+#include "core/yg_features.h"
 #include "dialogs/ui/dialogs_layout.h"
 
 #include "base/options.h"
@@ -494,7 +495,18 @@ void PaintRow(
 	if (swipeTranslation) {
 		p.translate(swipeMirrored ? swipeTranslation : -swipeTranslation, 0);
 	}
-	p.fillRect(geometry, bg);
+	if (Appearance::IsMaterialV2() && (context.active || context.selected)) {
+		p.fillRect(geometry, context.currentBg);
+		PainterHighQualityEnabler hq(p);
+		p.setPen(Qt::NoPen);
+		p.setBrush(bg);
+		const auto mx = style::ConvertScale(6);
+		const auto my = style::ConvertScale(2);
+		const auto rad = style::ConvertScale(14);
+		p.drawRoundedRect(geometry.adjusted(mx, my, -mx, -my), rad, rad);
+	} else {
+		p.fillRect(geometry, bg);
+	}
 	if (history) {
 		const auto color = Appearance::Mark(entry->session().uniqueId(), history->peer->id.value);
 		if (color.isValid()) p.fillRect(geometry.left(), geometry.top(), 3 * st::lineWidth, geometry.height(), color);
@@ -1261,7 +1273,16 @@ void RowPainter::Paint(
 				rect.setHeight(context.st->topicsHeight + rect.height());
 			}
 			const auto preview = Appearance::Get(Appearance::Key::ListLines);
-			if (preview != 2 || forum || monoforum) {
+			const auto maskPrivatePreview = Core::YgFeatures::StreamerHidePrivateChats()
+				&& peer
+				&& peer->isUser()
+				&& !peer->isSelf()
+				&& !peer->isServiceUser();
+			if (maskPrivatePreview) {
+				p.setFont(st::dialogsTextFont);
+				p.setPen(context.active ? st::dialogsTextFgActive : st::dialogsTextFg);
+				p.drawText(rect, Qt::AlignVCenter | Qt::AlignLeft, u"••••••••••••"_q);
+			} else if (preview != 2 || forum || monoforum) {
 				if (preview == 1 && !forum && !monoforum && !context.st->tagTop) rect.setHeight(std::min(2 * rect.height(), context.st->height - rect.top()));
 				view->paint(p, rect, context);
 			}

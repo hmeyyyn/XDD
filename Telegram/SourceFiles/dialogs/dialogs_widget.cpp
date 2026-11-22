@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "dialogs/dialogs_widget.h"
 
 #include "base/call_delayed.h"
+#include "core/appearance.h"
 #include "base/qt/qt_key_modifiers.h"
 #include "base/options.h"
 #include "dialogs/ui/chat_search_in.h"
@@ -5532,6 +5533,20 @@ void Widget::paintEvent(QPaintEvent *e) {
 	auto above = QRect(0, 0, width(), _scroll->y());
 	if (above.intersects(r)) {
 		p.fillRect(above.intersected(r), bg);
+		if (Appearance::IsMaterialV2()
+			&& _searchControls
+			&& _searchControls->isVisible()
+			&& _search
+			&& _search->isVisible()) {
+			PainterHighQualityEnabler hq(p);
+			const auto pill = _search->geometry()
+				.translated(_searchControls->pos())
+				.adjusted(-style::ConvertScale(2), style::ConvertScale(2), style::ConvertScale(2), -style::ConvertScale(2));
+			const auto rad = pill.height() / 2.;
+			p.setPen(QPen(st::shadowFg, 1.));
+			p.setBrush(st::dialogsBgOver);
+			p.drawRoundedRect(pill, rad, rad);
+		}
 	}
 
 	auto belowTop = _scroll->y() + _scroll->height();

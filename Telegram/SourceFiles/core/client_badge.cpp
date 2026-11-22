@@ -105,7 +105,7 @@ QString Unmarked(const QString &text) {
 Role RoleOfPeer(not_null<PeerData*> peer) {
 	const auto user = peer->asUser();
 	if (user && user->isSelf()) {
-		if (const auto saved = user->session().settings().ownClientBadge(); saved && *saved != Role::None) {
+		if (const auto saved = user->session().settings().ownClientBadge()) {
 			return *saved;
 		}
 		const auto mark = MarkedRole(user->lastName);

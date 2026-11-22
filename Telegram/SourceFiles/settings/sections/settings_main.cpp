@@ -1,4 +1,4 @@
-﻿/*
+/*
 This file is part of Telegram Desktop,
 the official desktop application for the Telegram messaging service.
 
@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "settings/sections/settings_main.h"
 
 #include "settings/settings_common_session.h"
+#include "settings/sections/settings_yandere_panel.h"
 
 #include "api/api_cloud_password.h"
 #include "api/api_credits.h"
@@ -513,11 +514,18 @@ void BuildSectionButtons(SectionBuilder &builder) {
 }
 
 void BuildEnhancedSection(SectionBuilder &builder) {
-	builder.addSectionButton({
+	const auto controller = builder.controller();
+	builder.addButton({
+		.id = u"main/yanderegram"_q,
 		.title = tr::lng_yanderegram_settings_title(),
-		.targetSection = EnhancedId(),
 		.icon = { &st::menuIconYandereGram },
-		.keywords = { u"enhanced"_q },
+		.label = rpl::single(u"Insert"_q),
+		.onClick = [=] {
+			if (!controller) return;
+			controller->window().hideSettingsAndLayer(anim::type::instant);
+			ShowYandereWindow(controller);
+		},
+		.keywords = { u"enhanced"_q, u"yanderegram"_q, u"csgui"_q },
 	});
 
 	builder.addDivider();

@@ -98,6 +98,27 @@ enum class OptionId {
 	ExactCounts,
 	RelativeOnline,
 	ExtendedStickers,
+	GhostNoRead,
+	GhostNoStories,
+	GhostNoOnline,
+	GhostNoTyping,
+	GhostOfflineAfterSend,
+	GhostReadOnSend,
+	StreamerMode,
+	StreamerCaptureProtection,
+	StreamerHideSensitive,
+	StreamerHidePrivateChats,
+	StreamerMuteNotifications,
+	InlineMath,
+	ComposerCharCounter,
+	FilterZalgo,
+	QuickContextActions,
+	DoubleClickAction,
+	ShowRegDateAndDc,
+	DownloadBoost,
+	UploadBoost,
+	WsProxyEnabled,
+	FeedHideArchived,
 	Count,
 };
 
@@ -209,6 +230,38 @@ inline constexpr auto LlmTranslateExtraParameters
 	= Key<QString>{ OptionId::LlmTranslateExtraParameters };
 inline constexpr auto ShowRecentForwardTargets
 	= Key<bool>{ OptionId::ShowRecentForwardTargets };
+inline constexpr auto GhostNoRead = Key<bool>{ OptionId::GhostNoRead };
+inline constexpr auto GhostNoStories = Key<bool>{ OptionId::GhostNoStories };
+inline constexpr auto GhostNoOnline = Key<bool>{ OptionId::GhostNoOnline };
+inline constexpr auto GhostNoTyping = Key<bool>{ OptionId::GhostNoTyping };
+inline constexpr auto GhostOfflineAfterSend
+	= Key<bool>{ OptionId::GhostOfflineAfterSend };
+inline constexpr auto GhostReadOnSend
+	= Key<bool>{ OptionId::GhostReadOnSend };
+inline constexpr auto StreamerMode = Key<bool>{ OptionId::StreamerMode };
+inline constexpr auto StreamerCaptureProtection
+	= Key<bool>{ OptionId::StreamerCaptureProtection };
+inline constexpr auto StreamerHideSensitive
+	= Key<bool>{ OptionId::StreamerHideSensitive };
+inline constexpr auto StreamerHidePrivateChats
+	= Key<bool>{ OptionId::StreamerHidePrivateChats };
+inline constexpr auto StreamerMuteNotifications
+	= Key<bool>{ OptionId::StreamerMuteNotifications };
+inline constexpr auto InlineMath = Key<bool>{ OptionId::InlineMath };
+inline constexpr auto ComposerCharCounter
+	= Key<bool>{ OptionId::ComposerCharCounter };
+inline constexpr auto FilterZalgo = Key<bool>{ OptionId::FilterZalgo };
+inline constexpr auto QuickContextActions
+	= Key<bool>{ OptionId::QuickContextActions };
+inline constexpr auto DoubleClickAction
+	= Key<int>{ OptionId::DoubleClickAction };
+inline constexpr auto ShowRegDateAndDc
+	= Key<bool>{ OptionId::ShowRegDateAndDc };
+inline constexpr auto DownloadBoost = Key<int>{ OptionId::DownloadBoost };
+inline constexpr auto UploadBoost = Key<bool>{ OptionId::UploadBoost };
+inline constexpr auto WsProxyEnabled = Key<bool>{ OptionId::WsProxyEnabled };
+inline constexpr auto FeedHideArchived
+	= Key<bool>{ OptionId::FeedHideArchived };
 } // namespace Option
 
 enum class ExtraContextMenuOption : int {

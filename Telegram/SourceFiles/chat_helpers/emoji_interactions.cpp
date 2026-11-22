@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "chat_helpers/emoji_interactions.h"
 
 #include "chat_helpers/stickers_emoji_pack.h"
@@ -319,7 +320,7 @@ void EmojiInteractions::sendAccumulatedOutgoing(
 	if (bunch.interactions.empty()) {
 		return;
 	}
-	if (EnhancedSettings::Get(EnhancedSettings::Option::GhostMode)) {
+	if (Core::YgFeatures::GhostDontSendTyping()) {
 		animations.erase(from, till);
 		return;
 	}
@@ -476,7 +477,7 @@ void EmojiInteractions::setWaitingForDownload(bool waiting) {
 }
 
 void EmojiInteractions::playStarted(not_null<PeerData*> peer, QString emoji) {
-	if (EnhancedSettings::Get(EnhancedSettings::Option::GhostMode)) return;
+	if (Core::YgFeatures::GhostDontSendTyping()) return;
 	auto &map = _playStarted[peer];
 	const auto i = map.find(emoji);
 	const auto now = crl::now();

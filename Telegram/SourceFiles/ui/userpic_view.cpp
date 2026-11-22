@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/userpic_view.h"
 
+#include "core/appearance.h"
 #include "ui/empty_userpic.h"
 #include "ui/painter.h"
 #include "ui/image/image_prepare.h"
@@ -140,13 +141,15 @@ void ValidateUserpicCache(
 	Expects(cloud != nullptr || empty != nullptr);
 
 	const auto full = QSize(size, size);
-	const auto version = style::PaletteVersion();
+	const auto radiusPct = Appearance::AvatarRadiusPercent();
+	const auto version = ((uint32(style::PaletteVersion()) << 6)
+		| (uint32(radiusPct) & 0x3Fu)) & 0x3FFFFFFFu;
 	const auto shapeValue = static_cast<uint32>(shape) & 3;
 	const auto regenerate = (view.cached.size() != QSize(size, size))
 		|| (view.shape != shapeValue)
+		|| (view.paletteVersion != version)
 		|| (cloud && !view.empty.null())
-		|| (empty && empty != view.empty.get())
-		|| (empty && view.paletteVersion != version);
+		|| (empty && empty != view.empty.get());
 	if (!regenerate) {
 		return;
 	}
@@ -167,8 +170,15 @@ void ValidateUserpicCache(
 				Images::CornersMask(size
 					* Ui::ForumUserpicRadiusMultiplier()
 					/ style::DevicePixelRatio()));
-		} else {
+		} else if (radiusPct >= 50) {
 			view.cached = Images::Circle(std::move(view.cached));
+		} else if (radiusPct > 0) {
+			const auto rad = std::max(
+				1,
+				int(std::round(size * (radiusPct / 100.0) / style::DevicePixelRatio())));
+			view.cached = Images::Round(
+				std::move(view.cached),
+				Images::CornersMask(rad));
 		}
 	} else {
 		if (view.cached.size() != full) {
@@ -187,8 +197,18 @@ void ValidateUserpicCache(
 				size,
 				size,
 				size * Ui::ForumUserpicRadiusMultiplier());
-		} else {
+		} else if (radiusPct >= 50) {
 			empty->paintCircle(p, 0, 0, size, size);
+		} else if (radiusPct > 0) {
+			empty->paintRounded(
+				p,
+				0,
+				0,
+				size,
+				size,
+				int(std::round(size * (radiusPct / 100.0))));
+		} else {
+			empty->paintSquare(p, 0, 0, size, size);
 		}
 	}
 }

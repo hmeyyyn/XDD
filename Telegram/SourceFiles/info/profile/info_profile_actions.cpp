@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "info/profile/info_profile_actions.h"
 
 #include "api/api_blocked_peers.h"
+#include "core/yg_features.h"
 #include "api/api_chat_participants.h"
 #include "api/api_credits.h"
 #include "api/api_report.h"
@@ -1977,7 +1978,10 @@ Section DetailsFiller::makeInfo() {
 		else {
 			idNum = ProfilePeerId(_peer);
 		}
-		auto idText = rpl::single(Ui::Text::Wrapped({ idNum }, EntityType::Code, {}));
+		const auto shownId = Core::YgFeatures::StreamerHideSensitive()
+			? u"••••••••••"_q
+			: idNum;
+		auto idText = rpl::single(Ui::Text::Wrapped({ shownId }, EntityType::Code, {}));
 		auto idInfo = addInfoOneLine(
 			idLabel,
 			std::move(idText),
@@ -1985,12 +1989,41 @@ Section DetailsFiller::makeInfo() {
 		);
 		idInfo.text->setClickHandlerFilter([=, peer = _peer](auto &&...)
 		{
-			if(!idNum.isEmpty()) {
+			if(!idNum.isEmpty() && !Core::YgFeatures::StreamerHideSensitive()) {
 				QGuiApplication::clipboard()->setText(idNum);
 				controller->showToast(tr::lng_copy_profile_id(tr::now));
 			}
 			return false;
 		});
+	}
+	if (!_topic && EnhancedSettings::Get(EnhancedSettings::Option::ShowRegDateAndDc)) {
+		if (const auto user = _peer->asUser(); user && !user->isBot() && !user->isServiceUser()) {
+			const auto regDate = Core::YgFeatures::EstimateRegistrationDate(
+				uint64(peerToUser(user->id).bare));
+			if (!regDate.isEmpty()) {
+				const auto dcLabel = PeerIdLabel(_peer);
+				const auto fullReg = (!EnhancedSettings::Get(EnhancedSettings::Option::ShowPeerId)
+						&& dcLabel != u"ID"_q)
+					? (regDate + u"  ·  "_q + dcLabel)
+					: regDate;
+				auto regInfo = addInfoOneLine(
+					tr::lng_yg_reg_date_label(tr::now),
+					rpl::single(TextWithEntities{ fullReg }),
+					QString());
+				regInfo.text->setClickHandlerFilter([=](auto &&...) {
+					QGuiApplication::clipboard()->setText(fullReg);
+					return false;
+				});
+			}
+		} else if (!EnhancedSettings::Get(EnhancedSettings::Option::ShowPeerId)) {
+			const auto dcLabel = PeerIdLabel(_peer);
+			if (dcLabel != u"ID"_q) {
+				addInfoOneLine(
+					tr::lng_yg_dc_label(tr::now),
+					rpl::single(TextWithEntities{ dcLabel }),
+					QString());
+			}
+		}
 	}
 	raw->toggleOn(tracker.atLeastOneShownValue());
 	raw->finishAnimating();

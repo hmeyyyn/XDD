@@ -24,6 +24,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "lang/lang_instance.h"
 #include "core/sandbox.h"
 #include "core/application.h"
+#include "core/core_screenshot_protection.h"
+#include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "export/export_manager.h"
 #include "inline_bots/bot_attach_web_view.h" // AttachWebView::cancel.
 #include "intro/intro_widget.h"
@@ -38,6 +41,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "apiwrap.h"
 #include "api/api_updates.h"
 #include "settings/settings_intro.h"
+#include "settings/sections/settings_yandere_panel.h"
 #include "base/options.h"
 #include "wallet/wallet_panel.h"
 #include "window/notifications_manager.h"
@@ -111,6 +115,13 @@ MainWindow::MainWindow(not_null<Window::Controller*> controller)
 void MainWindow::initHook() {
 	Platform::MainWindow::initHook();
 	QCoreApplication::instance()->installEventFilter(this);
+	Core::App().screenshotProtection().addContentReason(
+		this,
+		rpl::single(rpl::empty) | rpl::then(rpl::merge(
+			EnhancedSettings::Changes(EnhancedSettings::Option::StreamerMode),
+			EnhancedSettings::Changes(EnhancedSettings::Option::StreamerCaptureProtection)
+		)) | rpl::map([] { return Core::YgFeatures::StreamerCaptureProtected(); }),
+		lifetime());
 }
 
 void MainWindow::applyInitialWorkMode() {
@@ -640,9 +651,19 @@ void MainWindow::setInnerFocus() {
 bool MainWindow::eventFilter(QObject *object, QEvent *e) {
 	switch (e->type()) {
 	case QEvent::KeyPress: {
+		const auto keyEvent = static_cast<QKeyEvent*>(e);
+		if (object == windowHandle()
+			&& keyEvent->key() == Qt::Key_Insert
+			&& keyEvent->modifiers() == Qt::NoModifier
+			&& !keyEvent->isAutoRepeat()) {
+			if (const auto controller = sessionController()) {
+				Settings::ToggleYandereWindow(controller);
+				return true;
+			}
+		}
 		if (Logs::DebugEnabled()
 			&& object == windowHandle()) {
-			const auto key = static_cast<QKeyEvent*>(e)->key();
+			const auto key = keyEvent->key();
 			FeedLangTestingKey(key);
 		}
 #ifdef _DEBUG

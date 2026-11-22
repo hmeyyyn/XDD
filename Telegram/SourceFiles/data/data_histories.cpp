@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/data_histories.h"
 
 #include "api/api_text_entities.h"
+#include "core/yg_features.h"
 #include "data/business/data_shortcut_messages.h"
 #include "data/components/ephemeral_messages.h"
 #include "data/components/scheduled_messages.h"
@@ -297,6 +298,13 @@ void Histories::readInboxTill(
 		MsgId tillId,
 		bool force) {
 	Expects(IsServerMsgId(tillId) || (!tillId && !force));
+
+	if (Core::YgFeatures::GhostDontReadMessages() && !force) {
+		if (!Core::YgFeatures::ConsumeReadOnSendOnce(history->peer->id.value)) {
+			Core::App().notifications().clearIncomingFromHistory(history);
+			return;
+		}
+	}
 
 	DEBUG_LOG(("Reading: readInboxTill %1, force %2."
 		).arg(tillId.bare

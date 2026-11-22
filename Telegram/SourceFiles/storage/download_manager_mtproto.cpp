@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "storage/download_manager_mtproto.h"
 
+#include "core/enhanced_settings.h"
 #include "mtproto/facade.h"
 #include "mtproto/mtproto_auth_key.h"
 #include "mtproto/mtproto_response.h"
@@ -21,9 +22,27 @@ namespace {
 
 constexpr auto kKillSessionTimeout = 15 * crl::time(1000);
 constexpr auto kStartWaitedInSession = 4 * kDownloadPartSize;
-constexpr auto kMaxWaitedInSession = 16 * kDownloadPartSize;
+constexpr auto kMaxWaitedInSession = 32 * kDownloadPartSize;
 constexpr auto kStartSessionsCount = 1;
 constexpr auto kMaxSessionsCount = 8;
+
+[[nodiscard]] int StartWaitedInSession() {
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2)
+		? (16 * kDownloadPartSize)
+		: (level == 1)
+		? (8 * kDownloadPartSize)
+		: kStartWaitedInSession;
+}
+
+[[nodiscard]] int ActiveMaxWaitedInSession() {
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2)
+		? kMaxWaitedInSession
+		: (level == 1)
+		? (24 * kDownloadPartSize)
+		: (16 * kDownloadPartSize);
+}
 constexpr auto kMaxTrackedSessionRemoves = 64;
 constexpr auto kRetryAddSessionTimeout = 8 * crl::time(1000);
 constexpr auto kRetryAddSessionSuccesses = 3;
@@ -110,11 +129,14 @@ void DownloadManagerMtproto::Queue::removeSession(int index) {
 }
 
 DownloadManagerMtproto::DcSessionBalanceData::DcSessionBalanceData()
-: maxWaitedAmount(kStartWaitedInSession) {
+: maxWaitedAmount(StartWaitedInSession()) {
 }
 
 DownloadManagerMtproto::DcBalanceData::DcBalanceData()
-: sessions(kStartSessionsCount) {
+: sessions([] {
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2) ? 4 : (level == 1) ? 2 : kStartSessionsCount;
+}()) {
 }
 
 DownloadManagerMtproto::DownloadManagerMtproto(not_null<ApiWrap*> api)
@@ -259,11 +281,12 @@ void DownloadManagerMtproto::requestSucceeded(
 		});
 		return;
 	}
+	const auto activeMax = ActiveMaxWaitedInSession();
 	if (amountAtRequestStart == data.maxWaitedAmount
-		&& data.maxWaitedAmount < kMaxWaitedInSession) {
+		&& data.maxWaitedAmount < activeMax) {
 		data.maxWaitedAmount = std::min(
 			data.maxWaitedAmount + kDownloadPartSize,
-			kMaxWaitedInSession);
+			activeMax);
 		DEBUG_LOG(("Download (%1,%2) increased max waited amount %3."
 			).arg(dcId
 			).arg(index

@@ -2082,6 +2082,175 @@ void InsertPollHiddenResultsLabel(not_null<Ui::PopupMenu*> menu) {
 		menu->st().menu.separator);
 }
 
+namespace {
+
+class QuickActionsBar final : public Ui::Menu::ItemBase {
+public:
+	struct Entry {
+		QPointer<QAction> action;
+		not_null<const style::icon*> icon;
+	};
+
+	QuickActionsBar(
+		not_null<Ui::PopupMenu*> popup,
+		std::vector<Entry> entries)
+	: ItemBase(popup->menu(), popup->st().menu)
+	, _popup(popup.get())
+	, _dummyAction(new QAction(popup->menu()))
+	, _entries(std::move(entries)) {
+		setMouseTracking(true);
+		setCursor(Qt::PointingHandCursor);
+		popup->menu()->widthValue(
+		) | rpl::on_next([=](int w) {
+			if (w > 0) {
+				resize(w, contentHeight());
+			}
+		}, lifetime());
+
+		paintRequest(
+		) | rpl::on_next([=] {
+			Painter p(this);
+			PainterHighQualityEnabler hq(p);
+			const int n = int(_entries.size());
+			if (!n) return;
+			const int pad = style::ConvertScale(6);
+			const int avail = std::max(1, width() - 2 * pad);
+			const int cellW = avail / n;
+			for (int i = 0; i < n; ++i) {
+				const QRect cell(pad + i * cellW, style::ConvertScale(3), cellW, height() - style::ConvertScale(6));
+				if (i == _hovered) {
+					p.setPen(Qt::NoPen);
+					p.setBrush(st::defaultMenu.itemBgOver);
+					p.drawRoundedRect(cell.adjusted(2, 0, -2, 0), style::ConvertScale(7), style::ConvertScale(7));
+				}
+				_entries[i].icon->paintInCenter(p, cell);
+			}
+		}, lifetime());
+	}
+
+	bool isEnabled() const override { return false; }
+	not_null<QAction*> action() const override { return _dummyAction; }
+
+protected:
+	int contentHeight() const override {
+		return style::ConvertScale(38);
+	}
+
+	void mouseMoveEvent(QMouseEvent *e) override {
+		const int idx = cellAt(e->pos());
+		if (_hovered != idx) {
+			_hovered = idx;
+			if (idx >= 0 && _entries[idx].action) {
+				setToolTip(_entries[idx].action->text());
+			}
+			update();
+		}
+	}
+
+	void leaveEventHook(QEvent *) override {
+		if (_hovered != -1) {
+			_hovered = -1;
+			update();
+		}
+	}
+
+	void mousePressEvent(QMouseEvent *e) override {
+		if (e->button() == Qt::LeftButton) {
+			_pressed = cellAt(e->pos());
+		}
+	}
+
+	void mouseReleaseEvent(QMouseEvent *e) override {
+		if (e->button() == Qt::LeftButton) {
+			const int idx = cellAt(e->pos());
+			if (idx >= 0 && idx == _pressed && idx < int(_entries.size())) {
+				const auto act = _entries[idx].action;
+				const auto pop = _popup;
+				if (pop) {
+					pop->hideMenu();
+				}
+				if (act && act->isEnabled()) {
+					act->trigger();
+				}
+			}
+			_pressed = -1;
+		}
+	}
+
+private:
+	int cellAt(QPoint pt) const {
+		const int n = int(_entries.size());
+		if (!n || !rect().contains(pt)) return -1;
+		const int pad = style::ConvertScale(6);
+		const int avail = std::max(1, width() - 2 * pad);
+		if (pt.x() < pad || pt.x() >= pad + avail) return -1;
+		return std::clamp((pt.x() - pad) * n / avail, 0, n - 1);
+	}
+
+	QPointer<Ui::PopupMenu> _popup;
+	const not_null<QAction*> _dummyAction;
+	std::vector<Entry> _entries;
+	int _hovered = -1;
+	int _pressed = -1;
+};
+
+} // namespace
+
+void PrependQuickContextActions(not_null<Ui::PopupMenu*> menu) {
+	if (!EnhancedSettings::Get(EnhancedSettings::Option::QuickContextActions)
+		|| menu->empty()) {
+		return;
+	}
+	struct Candidate {
+		QString label;
+		not_null<const style::icon*> icon;
+	};
+	const std::vector<Candidate> wanted = {
+		{ tr::lng_context_reply_msg(tr::now), &st::menuIconReply },
+		{ tr::lng_context_copy_text(tr::now), &st::menuIconCopy },
+		{ tr::lng_context_copy_selected(tr::now), &st::menuIconCopy },
+		{ tr::lng_context_forward_msg(tr::now), &st::menuIconForward },
+		{ tr::lng_context_edit_msg(tr::now), &st::menuIconEdit },
+		{ tr::lng_pinned_pin(tr::now), &st::menuIconPin },
+		{ tr::lng_pinned_unpin(tr::now), &st::menuIconUnpin },
+		{ tr::lng_context_delete_msg(tr::now), &st::menuIconDelete },
+	};
+	std::vector<QuickActionsBar::Entry> found;
+	const auto &acts = menu->actions();
+	for (const auto &cand : wanted) {
+		for (const auto &actRef : acts) {
+			QAction *act = actRef;
+			if (!act || act->isSeparator() || !act->isEnabled() || act->menu()) {
+				continue;
+			}
+			if (act->text() == cand.label) {
+				bool dup = false;
+				for (const auto &e : found) {
+					if (e.action == act) dup = true;
+				}
+				if (!dup) {
+					found.push_back({ act, cand.icon });
+				}
+				break;
+			}
+		}
+		if (found.size() >= 5) break;
+	}
+	if (found.size() < 2) {
+		return;
+	}
+	menu->insertAction(0, base::make_unique_q<QuickActionsBar>(menu, std::move(found)));
+	const auto sepAction = new QAction(menu->menu());
+	sepAction->setSeparator(true);
+	menu->insertAction(
+		1,
+		base::make_unique_q<Ui::Menu::Separator>(
+			menu->menu(),
+			menu->st().menu,
+			menu->st().menu.separator,
+			sepAction));
+}
+
 [[nodiscard]] TextWithEntities PollVoteRestrictionsLabelText(
 		not_null<HistoryItem*> item,
 		not_null<PollData*> poll) {
@@ -2413,6 +2582,7 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 
 	// Build the full message menu.
 	FillContextMenuItems(result, list, request, hasPollOption);
+	PrependQuickContextActions(result.get());
 
 	if (item) {
 		const auto media = item->media();

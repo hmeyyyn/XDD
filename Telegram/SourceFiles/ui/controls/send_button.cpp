@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "ui/controls/send_button.h"
 
+#include "core/appearance.h"
 #include "lang/lang_tag.h"
 #include "lottie/lottie_icon.h"
 #include "ui/effects/ripple_animation.h"
@@ -299,6 +300,25 @@ void SendButton::paintCancel(QPainter &p, bool over) {
 
 void SendButton::paintSend(QPainter &p, bool over) {
 	const auto &sendIcon = over ? _st.inner.iconOver : _st.inner.icon;
+	if (Appearance::IsMaterialV2() && _st.sendIconFillPadding <= 0) {
+		const auto d = std::max(24, std::min(width(), height()) - style::ConvertScale(8));
+		const QRect circle((width() - d) / 2, (height() - d) / 2, d, d);
+		{
+			auto hq = PainterHighQualityEnabler(p);
+			p.setPen(Qt::NoPen);
+			p.setBrush(isDisabled()
+				? st::windowBgOver->c
+				: (_state.fillBgOverride.isValid()
+					? _state.fillBgOverride
+					: st::windowBgActive->c));
+			p.drawEllipse(circle);
+		}
+		sendIcon.paintInCenter(
+			p,
+			circle,
+			isDisabled() ? st::historyRecordVoiceFg->c : st::windowFgActive->c);
+		return;
+	}
 	if (const auto padding = _st.sendIconFillPadding; padding > 0) {
 		const auto ellipse = sendEllipseRect();
 		{

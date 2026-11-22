@@ -587,6 +587,12 @@ PRIVATE
     ui/chat/appearance_name_style.h
     core/appearance.cpp
     core/appearance.h
+    core/material_color_picker.cpp
+    core/material_color_picker.h
+    core/yg_features.cpp
+    core/yg_features.h
+    core/ws_proxy.cpp
+    core/ws_proxy.h
     core/client_badge.cpp
     core/client_badge.h
     core/changelogs.cpp

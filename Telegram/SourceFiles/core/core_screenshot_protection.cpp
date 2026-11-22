@@ -9,12 +9,16 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "base/event_filter.h"
 #include "core/enhanced_settings.h"
+#include "core/yg_features.h"
 #include "platform/platform_specific.h"
 
 namespace Core {
 
 ScreenshotProtection::ScreenshotProtection() {
-	EnhancedSettings::Watch(EnhancedSettings::Option::AllowScreenshots
+	rpl::merge(
+		EnhancedSettings::Changes(EnhancedSettings::Option::AllowScreenshots),
+		EnhancedSettings::Changes(EnhancedSettings::Option::StreamerMode),
+		EnhancedSettings::Changes(EnhancedSettings::Option::StreamerCaptureProtection)
 	) | rpl::on_next([=] {
 		refresh();
 	}, _lifetime);
@@ -64,6 +68,9 @@ void ScreenshotProtection::addReason(
 }
 
 bool ScreenshotProtection::activeFor(not_null<QWidget*> window) const {
+	if (YgFeatures::StreamerCaptureProtected()) {
+		return true;
+	}
 	if (EnhancedSettings::Get(EnhancedSettings::Option::AllowScreenshots)) {
 		return false;
 	}
