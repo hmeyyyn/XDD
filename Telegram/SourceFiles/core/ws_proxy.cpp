@@ -469,7 +469,7 @@ QString StatusText() {
 		tr::now,
 		lt_port,
 		QString::number(State().port),
-		lt_count,
+		lt_amount,
 		QString::number(ActiveSessions()));
 }
 

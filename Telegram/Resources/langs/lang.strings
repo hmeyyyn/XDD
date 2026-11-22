@@ -9896,7 +9896,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_yg_upload_boost_desc" = "Отправляет крупные чанки по 512 КБ с минимальной задержкой между пакетами.";
 "lng_yg_ws_proxy" = "Встроенный WS-прокси (tg-ws-proxy)";
 "lng_yg_ws_proxy_desc" = "Локальный мост MTProto поверх защищённого WebSocket (wss://kws.web.telegram.org).";
-"lng_yg_ws_proxy_on" = "Активен · 127.0.0.1:{port} · сессий: {count}";
+"lng_yg_ws_proxy_on" = "Активен · 127.0.0.1:{port} · сессий: {amount}";
 "lng_yg_ws_proxy_off" = "Отключён";
 "lng_yg_feed_empty" = "Пока нет загруженных постов из каналов. Откройте любой канал, чтобы посты подтянулись в ленту.";
 "lng_yg_feed_hide_archived" = "Скрывать каналы из Архива";

@@ -362,7 +362,7 @@
   "lng_yg_upload_boost_desc": "Uploads larger 512 KB parts with minimal inter-packet delay.",
   "lng_yg_ws_proxy": "Built-in WS proxy (tg-ws-proxy)",
   "lng_yg_ws_proxy_desc": "Local MTProto-over-WebSocket bridge via wss://kws.web.telegram.org.",
-  "lng_yg_ws_proxy_on": "Active · 127.0.0.1:{port} · sessions: {count}",
+  "lng_yg_ws_proxy_on": "Active · 127.0.0.1:{port} · sessions: {amount}",
   "lng_yg_ws_proxy_off": "Disabled",
   "lng_yg_feed_empty": "No channel posts loaded yet. Open any subscribed channel to populate the feed.",
   "lng_yg_feed_hide_archived": "Hide archived channels",
