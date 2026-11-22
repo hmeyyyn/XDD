@@ -500,9 +500,9 @@ void PaintRow(
 		PainterHighQualityEnabler hq(p);
 		p.setPen(Qt::NoPen);
 		p.setBrush(bg);
-		const auto mx = st::ConvertScale(6);
-		const auto my = st::ConvertScale(2);
-		const auto rad = st::ConvertScale(14);
+		const auto mx = style::ConvertScale(6);
+		const auto my = style::ConvertScale(2);
+		const auto rad = style::ConvertScale(14);
 		p.drawRoundedRect(geometry.adjusted(mx, my, -mx, -my), rad, rad);
 	} else {
 		p.fillRect(geometry, bg);

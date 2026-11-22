@@ -5541,7 +5541,7 @@ void Widget::paintEvent(QPaintEvent *e) {
 			PainterHighQualityEnabler hq(p);
 			const auto pill = _search->geometry()
 				.translated(_searchControls->pos())
-				.adjusted(-st::ConvertScale(2), st::ConvertScale(2), st::ConvertScale(2), -st::ConvertScale(2));
+				.adjusted(-style::ConvertScale(2), style::ConvertScale(2), style::ConvertScale(2), -style::ConvertScale(2));
 			const auto rad = pill.height() / 2.;
 			p.setPen(QPen(st::shadowFg, 1.));
 			p.setBrush(st::dialogsBgOver);

@@ -32,8 +32,8 @@ protected:
 		QPainter p(this);
 		PainterHighQualityEnabler hq(p);
 		p.fillRect(rect(), st::boxDividerBg);
-		const int cap = std::min(height() / 3, st::ConvertScale(5));
-		const int rad = st::ConvertScale(10);
+		const int cap = std::min(height() / 3, style::ConvertScale(5));
+		const int rad = style::ConvertScale(10);
 		if (cap > 0) {
 			p.setPen(Qt::NoPen);
 			p.setBrush(st::boxBg);

@@ -996,7 +996,7 @@ void MainMenu::paintEvent(QPaintEvent *e) {
 	if (Appearance::IsMaterialV2()) {
 		p.fillRect(clip, st::windowBg);
 		PainterHighQualityEnabler hq(p);
-		const auto rad = st::ConvertScale(18);
+		const auto rad = style::ConvertScale(18);
 		p.setPen(Qt::NoPen);
 		p.setBrush(st::mainMenuBg);
 		p.drawRoundedRect(QRect(-rad, 0, width() + rad, height()), rad, rad);

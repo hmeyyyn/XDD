@@ -301,7 +301,7 @@ void SendButton::paintCancel(QPainter &p, bool over) {
 void SendButton::paintSend(QPainter &p, bool over) {
 	const auto &sendIcon = over ? _st.inner.iconOver : _st.inner.icon;
 	if (Appearance::IsMaterialV2() && _st.sendIconFillPadding <= 0) {
-		const auto d = std::max(24, std::min(width(), height()) - st::ConvertScale(8));
+		const auto d = std::max(24, std::min(width(), height()) - style::ConvertScale(8));
 		const QRect circle((width() - d) / 2, (height() - d) / 2, d, d);
 		{
 			auto hq = PainterHighQualityEnabler(p);

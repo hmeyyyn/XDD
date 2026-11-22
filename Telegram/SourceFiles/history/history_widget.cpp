@@ -12243,15 +12243,15 @@ void HistoryWidget::drawField(Painter &p, const QRect &rect) {
 		controller()->isGifPausedAtLeastFor(Window::GifPauseReason::Any));
 	if (Appearance::IsMaterialV2()) {
 		PainterHighQualityEnabler hq(p);
-		const auto mx = st::ConvertScale(8);
-		const auto mb = st::ConvertScale(5);
-		const auto sendGap = _send ? (_send->width() + st::ConvertScale(4)) : 0;
+		const auto mx = style::ConvertScale(8);
+		const auto mb = style::ConvertScale(5);
+		const auto sendGap = _send ? (_send->width() + style::ConvertScale(4)) : 0;
 		const auto pill = myrtlrect(
 			mx,
-			backy + st::ConvertScale(2),
+			backy + style::ConvertScale(2),
 			std::max(80, width() - mx - sendGap),
-			std::max(28, backh - mb - st::ConvertScale(2)));
-		const auto rad = std::min(pill.height() / 2, st::ConvertScale(22));
+			std::max(28, backh - mb - style::ConvertScale(2)));
+		const auto rad = std::min(pill.height() / 2, style::ConvertScale(22));
 		p.setBrush(st::historyReplyBg);
 		p.setPen(QPen(st::shadowFg, 1.));
 		p.drawRoundedRect(pill, rad, rad);

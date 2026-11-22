@@ -5934,7 +5934,7 @@ void ComposeControls::paintBackground(QPainter &p, QRect full, QRect clip) {
 		p.setBrush(_st.bg);
 		p.setPen(Appearance::IsMaterialV2() ? QPen(st::shadowFg, 1.) : Qt::NoPen);
 		const auto r = Appearance::IsMaterialV2()
-			? std::min(full.height() / 2, st::ConvertScale(22))
+			? std::min(full.height() / 2, style::ConvertScale(22))
 			: _st.radius;
 		if (_commentsShown && !_commentsShown->isHidden()) {
 			p.drawRoundedRect(_commentsShown->geometry(), r, r);
@@ -5948,12 +5948,12 @@ void ComposeControls::paintBackground(QPainter &p, QRect full, QRect clip) {
 				- _st.starsSkip);
 		}
 		if (Appearance::IsMaterialV2() && !_backgroundRect) {
-			const auto sendGap = _send ? (_send->width() + st::ConvertScale(4)) : 0;
+			const auto sendGap = _send ? (_send->width() + style::ConvertScale(4)) : 0;
 			full = full.adjusted(
-				st::ConvertScale(8),
-				st::ConvertScale(2),
+				style::ConvertScale(8),
+				style::ConvertScale(2),
 				-sendGap,
-				-st::ConvertScale(5));
+				-style::ConvertScale(5));
 		}
 		p.drawRoundedRect(full, r, r);
 	} else {

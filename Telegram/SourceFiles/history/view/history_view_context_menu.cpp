@@ -2111,15 +2111,15 @@ public:
 			PainterHighQualityEnabler hq(p);
 			const int n = int(_entries.size());
 			if (!n) return;
-			const int pad = st::ConvertScale(6);
+			const int pad = style::ConvertScale(6);
 			const int avail = std::max(1, width() - 2 * pad);
 			const int cellW = avail / n;
 			for (int i = 0; i < n; ++i) {
-				const QRect cell(pad + i * cellW, st::ConvertScale(3), cellW, height() - st::ConvertScale(6));
+				const QRect cell(pad + i * cellW, style::ConvertScale(3), cellW, height() - style::ConvertScale(6));
 				if (i == _hovered) {
 					p.setPen(Qt::NoPen);
-					p.setBrush(st::menuBgOver);
-					p.drawRoundedRect(cell.adjusted(2, 0, -2, 0), st::ConvertScale(7), st::ConvertScale(7));
+					p.setBrush(st::defaultMenu.itemBgOver);
+					p.drawRoundedRect(cell.adjusted(2, 0, -2, 0), style::ConvertScale(7), style::ConvertScale(7));
 				}
 				_entries[i].icon->paintInCenter(p, cell);
 			}
@@ -2131,7 +2131,7 @@ public:
 
 protected:
 	int contentHeight() const override {
-		return st::ConvertScale(38);
+		return style::ConvertScale(38);
 	}
 
 	void mouseMoveEvent(QMouseEvent *e) override {
@@ -2179,7 +2179,7 @@ private:
 	int cellAt(QPoint pt) const {
 		const int n = int(_entries.size());
 		if (!n || !rect().contains(pt)) return -1;
-		const int pad = st::ConvertScale(6);
+		const int pad = style::ConvertScale(6);
 		const int avail = std::max(1, width() - 2 * pad);
 		if (pt.x() < pad || pt.x() >= pad + avail) return -1;
 		return std::clamp((pt.x() - pad) * n / avail, 0, n - 1);
