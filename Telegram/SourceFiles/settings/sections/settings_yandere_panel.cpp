@@ -1830,7 +1830,9 @@ private:
 		std::sort(posts.begin(), posts.end(), [](const FeedPost &a, const FeedPost &b) {
 			return a.date > b.date;
 		});
-		if (posts.size() > 60) posts.resize(60);
+		if (posts.size() > 60) {
+			posts.erase(posts.begin() + 60, posts.end());
+		}
 
 		if (posts.empty()) {
 			auto *emptyCard = new GuiActionTile(
