@@ -1347,7 +1347,29 @@ private:
 			addCustomTile(Page::Network, wsStatus, [=] { return wsStatus->searchBlob(); }, 74, true);
 		}
 		addEnhancedToggle(Page::Network, Option::WsProxyEnabled);
-		addEnhancedToggle(Page::Network, Option::DownloadBoost);
+		{
+			auto *dlBoost = new GuiChoiceTile(
+				_canvas,
+				tr::lng_yg_download_boost(tr::now),
+				tr::lng_yg_download_boost_desc(tr::now),
+				[] {
+					return std::vector<QString>{
+						tr::lng_yg_boost_off(tr::now),
+						tr::lng_yg_boost_fast(tr::now),
+						tr::lng_yg_boost_extreme(tr::now),
+					};
+				},
+				[] { return EnhancedSettings::Get(Option::DownloadBoost); },
+				[=](int idx) {
+					if (const auto ctrl = _controller.get()) {
+						EnhancedSettings::ApplyOption(ctrl, Option::DownloadBoost, idx);
+					} else {
+						EnhancedSettings::Set(Option::DownloadBoost, idx);
+					}
+				},
+				EnhancedSettings::Changes(Option::DownloadBoost));
+			addCustomTile(Page::Network, dlBoost, [=] { return dlBoost->searchBlob(); }, 76);
+		}
 		addEnhancedToggle(Page::Network, Option::UploadBoost);
 
 		// --- 7. CHANNELS FEED (static header controls; posts populated dynamically) ---

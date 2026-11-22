@@ -27,14 +27,20 @@ constexpr auto kStartSessionsCount = 1;
 constexpr auto kMaxSessionsCount = 8;
 
 [[nodiscard]] int StartWaitedInSession() {
-	return EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost)
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2)
 		? (16 * kDownloadPartSize)
+		: (level == 1)
+		? (8 * kDownloadPartSize)
 		: kStartWaitedInSession;
 }
 
 [[nodiscard]] int ActiveMaxWaitedInSession() {
-	return EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost)
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2)
 		? kMaxWaitedInSession
+		: (level == 1)
+		? (24 * kDownloadPartSize)
 		: (16 * kDownloadPartSize);
 }
 constexpr auto kMaxTrackedSessionRemoves = 64;
@@ -127,9 +133,10 @@ DownloadManagerMtproto::DcSessionBalanceData::DcSessionBalanceData()
 }
 
 DownloadManagerMtproto::DcBalanceData::DcBalanceData()
-: sessions(EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost)
-	? 4
-	: kStartSessionsCount) {
+: sessions([] {
+	const auto level = EnhancedSettings::Get(EnhancedSettings::Option::DownloadBoost);
+	return (level >= 2) ? 4 : (level == 1) ? 2 : kStartSessionsCount;
+}()) {
 }
 
 DownloadManagerMtproto::DownloadManagerMtproto(not_null<ApiWrap*> api)

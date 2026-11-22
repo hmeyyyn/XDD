@@ -2251,8 +2251,6 @@ void PrependQuickContextActions(not_null<Ui::PopupMenu*> menu) {
 			sepAction));
 }
 
-namespace {
-
 [[nodiscard]] TextWithEntities PollVoteRestrictionsLabelText(
 		not_null<HistoryItem*> item,
 		not_null<PollData*> poll) {
