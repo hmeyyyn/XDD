@@ -2082,6 +2082,8 @@ void InsertPollHiddenResultsLabel(not_null<Ui::PopupMenu*> menu) {
 		menu->st().menu.separator);
 }
 
+namespace {
+
 class QuickActionsBar final : public Ui::Menu::ItemBase {
 public:
 	struct Entry {
@@ -2216,7 +2218,8 @@ void PrependQuickContextActions(not_null<Ui::PopupMenu*> menu) {
 	std::vector<QuickActionsBar::Entry> found;
 	const auto &acts = menu->actions();
 	for (const auto &cand : wanted) {
-		for (auto *act : acts) {
+		for (const auto &actRef : acts) {
+			QAction *act = actRef;
 			if (!act || act->isSeparator() || !act->isEnabled() || act->menu()) {
 				continue;
 			}
