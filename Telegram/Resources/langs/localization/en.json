@@ -373,5 +373,11 @@
   "lng_yg_feed_about": "Unified chronological feed of recent posts from your subscribed channels.",
   "lng_look_avatar_radius_desc": "0% — square, 28% — squircle, 50% — circle.",
   "lng_yg_drawer_title": "Left menu",
-  "lng_yg_drawer_about": "Choose which items are shown in the left menu. Applies the next time you open it."
+  "lng_yg_drawer_about": "Choose which items are shown in the left menu. Applies the next time you open it.",
+  "lng_yg_local_premium": "Local Telegram Premium",
+  "lng_yg_local_premium_desc": "On this device only: premium emoji are sent as :id:, premium badge and styling. Does not bypass Telegram server limits.",
+  "lng_yg_bot_typing_desc": "Bots from Bot Use will not see you typing.",
+  "lng_yg_bot_rich_desc": "Automatically open the rich editor when working with bots.",
+  "lng_yg_bot_reply_desc": "Allow replying to bots and repeating their messages.",
+  "lng_yg_allow_screenshots": "Allow screenshots"
 }

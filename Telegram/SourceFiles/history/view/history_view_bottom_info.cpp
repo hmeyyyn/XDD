@@ -529,7 +529,9 @@ void BottomInfo::layoutDateText() {
 		&& (_data.flags & Data::Flag::EditedPrimary)
 		&& !(_data.flags & Data::Flag::ForwardedDate);
 	const auto marker = Appearance::Get(Appearance::Key::Journal);
-	const auto edited = editedPrimary
+	const auto edited = (_data.flags & Data::Flag::DeletedLocal)
+		? u"🗑 "_q
+		: editedPrimary
 		? QString()
 		: updated
 		? (tr::lng_ephemeral_updated(tr::now) + ' ')
@@ -757,6 +759,9 @@ BottomInfo::Data BottomInfoDataFromMessage(not_null<Message*> message) {
 				result.author = msgsigned->author;
 			}
 		}
+	}
+	if (item->isLocallyDeleted()) {
+		result.flags |= Flag::DeletedLocal;
 	}
 	if (const auto editedDate = message->displayedEditDate()) {
 		result.flags |= Flag::Edited;

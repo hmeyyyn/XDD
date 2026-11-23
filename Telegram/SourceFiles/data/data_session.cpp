@@ -21,6 +21,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/application.h"
 #include "core/core_settings.h"
 #include "core/msg_extra_state.h"
+#include "core/chat_enhanced_settings.h"
+#include "core/enhanced_settings.h"
 #include "core/mime_type.h" // Core::IsMimeSticker
 #include "ui/image/image_location_factory.h" // Images::FromPhotoSize
 #include "ui/text/format_values.h" // Ui::FormatPhone
@@ -3371,10 +3373,30 @@ void Session::processMessagesDeleted(
 		}
 	}
 	if (!toDestroy.empty()) {
-		notifyItemsAboutToBeDestroyed(toDestroy);
+		// YandereGram: keep deleted messages as translucent ghosts in
+		// the chat itself (trash badge instead of "edited") when the
+		// SaveDeleted feature is on for that peer.
+		auto kept = std::vector<not_null<HistoryItem*>>();
+		auto destroyed = std::vector<not_null<HistoryItem*>>();
 		for (const auto &item : toDestroy) {
-			item->recordJournalSnapshot(true);
-			item->destroy();
+			if (item->isRegular() && !item->isService() && !item->isEphemeral()
+				&& EnhancedSettings::ResolveChatFeature(item->history()->peer,
+					EnhancedSettings::ChatFeature::SaveDeleted)) {
+				kept.push_back(item);
+			} else {
+				destroyed.push_back(item);
+			}
+		}
+		for (const auto &item : kept) {
+			item->markLocallyDeleted();
+			item->history()->owner().requestItemResize(item);
+		}
+		if (!destroyed.empty()) {
+			notifyItemsAboutToBeDestroyed(destroyed);
+			for (const auto &item : destroyed) {
+				item->recordJournalSnapshot(true);
+				item->destroy();
+			}
 		}
 	}
 	for (const auto &history : historiesToCheck) {
@@ -3395,10 +3417,23 @@ void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 		}
 	}
 	if (!toDestroy.empty()) {
-		notifyItemsAboutToBeDestroyed(toDestroy);
+		auto destroyed = std::vector<not_null<HistoryItem*>>();
 		for (const auto &item : toDestroy) {
-			item->recordJournalSnapshot(true);
-			item->destroy();
+			if (item->isRegular() && !item->isService() && !item->isEphemeral()
+				&& EnhancedSettings::ResolveChatFeature(item->history()->peer,
+					EnhancedSettings::ChatFeature::SaveDeleted)) {
+				item->markLocallyDeleted();
+				item->history()->owner().requestItemResize(item);
+			} else {
+				destroyed.push_back(item);
+			}
+		}
+		if (!destroyed.empty()) {
+			notifyItemsAboutToBeDestroyed(destroyed);
+			for (const auto &item : destroyed) {
+				item->recordJournalSnapshot(true);
+				item->destroy();
+			}
 		}
 	}
 	for (const auto &history : historiesToCheck) {

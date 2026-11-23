@@ -403,6 +403,8 @@ public:
 
 	[[nodiscard]] bool isService() const;
 	void recordJournalSnapshot(bool deleted) const;
+	[[nodiscard]] bool isLocallyDeleted() const { return _locallyDeleted; }
+	void markLocallyDeleted() { _locallyDeleted = true; }
 	void applyEdition(HistoryMessageEdition &&edition);
 	void applyChanges(not_null<Data::Story*> story);
 
@@ -834,6 +836,7 @@ private:
 	const not_null<PeerData*> _from;
 	mutable PeerData *_displayFrom = nullptr;
 	mutable MessageFlags _flags = 0;
+	bool _locallyDeleted = false;
 
 	TextWithEntities _text;
 

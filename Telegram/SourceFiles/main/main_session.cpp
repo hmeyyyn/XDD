@@ -7,6 +7,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "main/main_session.h"
 
+#include "core/enhanced_settings.h"
+
 #include "apiwrap.h"
 #include "api/api_peer_colors.h"
 #include "api/api_updates.h"
@@ -367,7 +369,8 @@ rpl::producer<> Session::downloaderTaskFinished() const {
 }
 
 bool Session::premium() const {
-	return _user->isPremium();
+	return _user->isPremium()
+		|| EnhancedSettings::Get(EnhancedSettings::Option::LocalPremium);
 }
 
 bool Session::premiumPossible() const {

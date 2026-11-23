@@ -9908,3 +9908,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_look_avatar_radius_desc" = "0% — квадрат, 28% — скруглённый квадрат, 50% — круг.";
 "lng_yg_drawer_title" = "Левое меню";
 "lng_yg_drawer_about" = "Выберите пункты, которые будут показаны в левом меню. Применится при следующем открытии меню.";
+"lng_yg_local_premium" = "Локальный Telegram Premium";
+"lng_yg_local_premium_desc" = "Только на этом устройстве: прем-эмодзи отправляются как :id:, значок и оформление премиума. Серверные лимиты Telegram не обходит.";
+"lng_yg_bot_typing_desc" = "Боты из Bot Use не будут видеть, что вы печатаете.";
+"lng_yg_bot_rich_desc" = "Автоматически открывать расширенный редактор при работе с ботами.";
+"lng_yg_bot_reply_desc" = "Разрешать отвечать ботам и повторять их сообщения.";
+"lng_yg_allow_screenshots" = "Разрешить скриншоты";
