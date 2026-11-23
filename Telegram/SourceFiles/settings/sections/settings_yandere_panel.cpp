@@ -17,6 +17,7 @@
 #include "core/ws_proxy.h"
 #include "data/data_folder.h"
 #include "data/data_peer.h"
+#include "data/data_peer_values.h"
 #include "data/data_session.h"
 #include "data/data_user.h"
 #include "dialogs/dialogs_indexed_list.h"
@@ -48,6 +49,7 @@
 #include <QtCore/QLocale>
 #include <QtCore/QPointer>
 #include <QtCore/QTimer>
+#include <QtCore/QVariantAnimation>
 #include <QtGui/QClipboard>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QKeyEvent>
@@ -68,6 +70,9 @@
 #include <cmath>
 
 namespace Settings {
+
+constexpr auto kDrawerHiddenKey = "yanderegram.drawer.hidden";
+
 namespace {
 
 using Page = PanelPage;
@@ -226,23 +231,29 @@ public:
 		auto f = font();
 		f.setWeight(QFont::DemiBold);
 		p.setFont(f);
-		const auto h = p.fontMetrics().height();
+		// Title wraps to up to two lines (never hard-clipped mid-word),
+		// description wraps below it instead of single-line eliding.
+		const int textW = std::max(40, width() - 72);
+		const auto titleRect = p.fontMetrics().boundingRect(
+			QRect(0, 0, textW, height()), Qt::TextWordWrap, text());
+		const int titleH = std::min(titleRect.height(), 2 * p.fontMetrics().lineSpacing());
 		p.drawText(
-			QRect(12, 8, width() - 46, 2 * h + 2),
+			QRect(14, 9, textW, titleH),
 			Qt::AlignLeft | Qt::AlignTop | Qt::TextWordWrap,
 			text());
 
 		p.setFont(font());
 		p.setPen(QColor(178, 169, 178));
-		const auto area = QRect(12, height() - h - 9, width() - 64, h + 2);
-		p.drawText(
-			area,
-			Qt::AlignVCenter | Qt::AlignLeft,
-			p.fontMetrics().elidedText(detail, Qt::ElideRight, area.width()));
+		if (!detail.isEmpty()) {
+			p.drawText(
+				QRect(14, 11 + titleH, textW, std::max(0, height() - titleH - 16)),
+				Qt::AlignTop | Qt::AlignLeft | Qt::TextWordWrap,
+				detail);
+		}
 
-		// Custom CSGUI pill toggle
-		const int tx = width() - 42;
-		const int ty = height() - 25;
+		// Custom CSGUI pill toggle (vertically centred, like Larp Client)
+		const int tx = width() - 44;
+		const int ty = (height() - 16) / 2;
 		p.setPen(Qt::NoPen);
 		p.setBrush(isChecked() ? accent : QColor(68, 63, 73));
 		p.drawRoundedRect(QRect(tx, ty, 30, 16), 8, 8);
@@ -768,6 +779,46 @@ protected:
 	}
 };
 
+// Bottom-of-sidebar profile avatar: real userpic, or the client logo
+// while Streamer Mode masks the identity.
+class ProfileAvatar final : public Ui::RpWidget {
+public:
+	ProfileAvatar(QWidget *parent, Fn<PeerData*()> peer, Fn<bool()> streamer)
+	: RpWidget(parent), _peer(std::move(peer)), _streamer(std::move(streamer)) {
+		setAttribute(Qt::WA_TransparentForMouseEvents);
+	}
+
+protected:
+	void paintEvent(QPaintEvent *) override {
+		QPainter p(this);
+		p.setRenderHint(QPainter::Antialiasing);
+		const int size = std::min(width(), height());
+		if (_streamer && _streamer()) {
+			const QPixmap logo(u":/gui/art/logo_256_no_margin.png"_q);
+			if (!logo.isNull()) {
+				QPainterPath clip;
+				clip.addEllipse(0, 0, size, size);
+				p.setClipPath(clip);
+				p.drawPixmap(0, 0, size, size, logo);
+				p.setClipping(false);
+			}
+			return;
+		}
+		if (const auto peer = _peer ? _peer() : nullptr) {
+			peer->paintUserpicLeft(p, _view, 0, 0, size, size, true);
+		}
+		// Online dot.
+		p.setPen(QPen(QColor(20, 18, 24), 2));
+		p.setBrush(QColor(61, 217, 116));
+		p.drawEllipse(QRect(size - 11, size - 11, 9, 9));
+	}
+
+private:
+	Fn<PeerData*()> _peer;
+	Fn<bool()> _streamer;
+	mutable Ui::PeerUserpicView _view;
+};
+
 struct AppearanceChoiceSpec {
 	Appearance::Key key;
 	const tr::phrase<> *title;
@@ -875,6 +926,7 @@ public:
 	}
 
 	void selectPage(Page page) {
+		const bool changedPage = (page != _active);
 		_active = page;
 		if (_search) _search->clear();
 		if (page == Page::Feed) {
@@ -882,9 +934,31 @@ public:
 		} else if (page == Page::Journal) {
 			rebuildDynamicJournal();
 		}
+		if (changedPage) {
+			// Smooth slide+fade page transition (Larp Client style).
+			_pageAnim->stop();
+			_pageAnim->setStartValue(0.0);
+			_pageAnim->setEndValue(1.0);
+			_pageAnim->start();
+		}
 		relayoutContent();
 		if (_scroll) _scroll->verticalScrollBar()->setValue(0);
 		update();
+	}
+
+	void refreshProfile() {
+		const auto streamer = EnhancedSettings::Get(EnhancedSettings::Option::StreamerMode);
+		if (streamer) {
+			if (_profileName) _profileName->setText(u"YandereGram"_q);
+			if (_profileStatus) _profileStatus->setText(u"Nyaaa >_<"_q);
+		} else if (const auto ctrl = _controller.get()) {
+			const auto user = ctrl->session().user();
+			if (_profileName) _profileName->setText(user->name());
+			if (_profileStatus) {
+				_profileStatus->setText(Data::OnlineText(user, base::unixtime::now()));
+			}
+		}
+		if (_profileAvatar) _profileAvatar->update();
 	}
 
 	void showBanner(const QString &msg) {
@@ -906,12 +980,16 @@ protected:
 		// Outer shell
 		p.setPen(QPen(QColor(68, 48, 58), 1.2));
 		p.setBrush(bg);
-		p.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 12, 12);
+		p.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 16, 16);
 
 		// Sidebar background
 		p.setPen(Qt::NoPen);
-		p.setBrush(QColor(20, 18, 24));
-		p.drawRoundedRect(QRect(2, 50, kSidebarW - 2, height() - 52), 10, 10);
+		p.setBrush(QColor(19, 17, 23));
+		p.drawRoundedRect(QRect(2, 50, kSidebarW - 2, height() - 52), 12, 12);
+		// Profile block separator at the sidebar bottom.
+		p.setPen(QPen(QColor(46, 40, 52), 1));
+		p.drawLine(12, height() - 68, kSidebarW - 12, height() - 68);
+		p.setPen(Qt::NoPen);
 
 		// Header divider & sidebar divider
 		p.setPen(QPen(QColor(46, 40, 52), 1));
@@ -984,7 +1062,7 @@ protected:
 	}
 
 private:
-	static constexpr int kSidebarW = 198;
+	static constexpr int kSidebarW = 236;
 
 	struct TileItem {
 		Page page = Page::Interface;
@@ -1069,6 +1147,36 @@ private:
 		_bannerTimer = new QTimer(this);
 		_bannerTimer->setSingleShot(true);
 		connect(_bannerTimer, &QTimer::timeout, this, [=] { _bannerLabel->hide(); });
+
+		_pageAnim = new QVariantAnimation(this);
+		_pageAnim->setDuration(220);
+		_pageAnim->setEasingCurve(QEasingCurve::OutCubic);
+		connect(_pageAnim, &QVariantAnimation::valueChanged, this, [=](const QVariant &v) {
+			_pageProgress = v.toDouble();
+			relayoutContent();
+			update();
+		});
+
+		// Profile block pinned to the sidebar bottom (like Larp Client):
+		// avatar + nick + network status from the real profile.
+		_profileAvatar = new ProfileAvatar(
+			this,
+			[=]() -> PeerData* {
+				const auto ctrl = _controller.get();
+				return ctrl ? ctrl->session().user().get() : nullptr;
+			},
+			[] { return EnhancedSettings::Get(EnhancedSettings::Option::StreamerMode); });
+		_profileName = new QLabel(this);
+		_profileName->setObjectName(u"ygProfileName"_q);
+		_profileStatus = new QLabel(this);
+		_profileStatus->setObjectName(u"ygProfileStatus"_q);
+		EnhancedSettings::Changes(EnhancedSettings::Option::StreamerMode)
+			| rpl::on_next([=] { refreshProfile(); }, lifetime());
+		auto *profileTimer = new QTimer(this);
+		profileTimer->setInterval(4000);
+		connect(profileTimer, &QTimer::timeout, this, [=] { refreshProfile(); });
+		profileTimer->start();
+		refreshProfile();
 	}
 
 	void applyStyleSheet() {
@@ -1087,9 +1195,11 @@ private:
 			QPushButton:hover { background: #342936; border-color: #613d4b; }
 			QPushButton#ygClose { background: #2a1d24; border: 1px solid #52323e; color: #ff8a93; font-size: 13px; padding: 0px; }
 			QPushButton#ygClose:hover { background: %2; color: #ffffff; }
-			QPushButton#ygNav { background: transparent; border: 0px; border-radius: 7px; color: #cfc6d0; text-align: left; padding: 6px 12px; font-weight: 500; }
+			QPushButton#ygNav { background: transparent; border: 0px; border-radius: 9px; color: #cfc6d0; text-align: left; padding: 7px 12px; font-size: 13px; font-weight: 500; }
 			QPushButton#ygNav:hover { background: #292330; color: #ffffff; }
 			QPushButton#ygNav:checked { background: #41232c; border-left: 3px solid %2; color: #ffffff; font-weight: 700; }
+			QLabel#ygProfileName { font-size: 13px; font-weight: 700; color: #ffffff; }
+			QLabel#ygProfileStatus { font-size: 11px; color: #3dd974; }
 			QScrollArea, QWidget#ygCanvas { background: transparent; }
 			QScrollBar:vertical { background: #16141a; width: 8px; margin: 2px; border-radius: 4px; }
 			QScrollBar::handle:vertical { background: #4a3542; min-height: 28px; border-radius: 4px; }
@@ -1110,7 +1220,10 @@ private:
 		_exportBtn->setGeometry(closeX - exportW - 8, 11, exportW, 28);
 		_search->setGeometry(searchLeft, 11, std::max(140, _exportBtn->x() - searchLeft - 10), 28);
 
-		_navScroll->setGeometry(6, 56, kSidebarW - 10, height() - 64);
+		_navScroll->setGeometry(6, 56, kSidebarW - 10, std::max(60, height() - 64 - 68));
+		if (_profileAvatar) _profileAvatar->setGeometry(14, height() - 58, 38, 38);
+		if (_profileName) _profileName->setGeometry(60, height() - 58, kSidebarW - 68, 20);
+		if (_profileStatus) _profileStatus->setGeometry(60, height() - 38, kSidebarW - 68, 18);
 		const int navBtnH = 33;
 		_navContainer->setGeometry(0, 0, _navScroll->viewport()->width(), int(_navBtns.size()) * (navBtnH + 3) + 8);
 		for (int i = 0; i < int(_navBtns.size()); ++i) {
@@ -1526,6 +1639,48 @@ private:
 				[] { Appearance::ResetColors(); });
 			addCustomTile(Page::Appearance, resetPal, [=] { return resetPal->searchBlob(); }, 66);
 
+			// Left (main-menu) drawer customisation: choose which items
+			// are shown in the hamburger drawer (applies on next open).
+			{
+				const std::vector<std::pair<QByteArray, QString>> drawerItems = {
+					{ "profile", tr::lng_menu_my_profile(tr::now) },
+					{ "create_group", tr::lng_create_group_title(tr::now) },
+					{ "create_supergroup", tr::lng_create_supergroup_title(tr::now) },
+					{ "create_channel", tr::lng_create_channel_title(tr::now) },
+					{ "contacts", tr::lng_menu_contacts(tr::now) },
+					{ "calls", tr::lng_menu_calls(tr::now) },
+					{ "saved", tr::lng_saved_messages(tr::now) },
+					{ "settings", tr::lng_menu_settings(tr::now) },
+					{ "yandere", tr::lng_yanderegram_settings_title(tr::now) },
+					{ "feed", tr::lng_yg_cat_feed(tr::now) },
+					{ "night", tr::lng_menu_night_mode(tr::now) },
+					{ "phone", tr::lng_settings_show_phone_number(tr::now) },
+					{ "screenshot", tr::lng_settings_screen_shot_mode(tr::now) },
+					{ "ghost", tr::lng_yg_ghost_mode(tr::now) },
+					{ "streamer", tr::lng_yg_streamer_mode(tr::now) },
+				};
+				auto *drawerHead = new GuiActionTile(
+					_canvas,
+					tr::lng_yg_drawer_title(tr::now),
+					tr::lng_yg_drawer_about(tr::now),
+					{},
+					nullptr);
+				addCustomTile(Page::Appearance, drawerHead, [=] { return drawerHead->searchBlob(); }, 76, true);
+				for (const auto &[drawerId, drawerTitle] : drawerItems) {
+					auto *tile = new GuiToggleTile(
+						_canvas,
+						{},
+						drawerTitle,
+						{},
+						[=] { return DrawerItemVisible(drawerId); },
+						[=](bool on) { SetDrawerItemVisible(drawerId, on); },
+						Appearance::Changes(),
+						false,
+						nullptr);
+					addCustomTile(Page::Appearance, tile, [=] { return tile->searchBlob(); }, 64);
+				}
+			}
+
 			// All Appearance Choice Cards
 			for (const auto &spec : AllAppearanceChoices()) {
 				const auto key = spec.key;
@@ -1919,6 +2074,7 @@ private:
 		const int cols = (availW >= 460) ? 2 : 1;
 		const int colW = (availW - (cols - 1) * gap) / cols;
 
+		const int slideX = int((1.0 - _pageProgress) * 26);
 		int y = pad;
 		int col = 0;
 		int rowMaxH = 0;
@@ -1937,18 +2093,19 @@ private:
 			if (!vis) continue;
 
 			++shown;
+			const int itemH = std::max(item.preferredHeight, 84);
 			if (item.fullWidth || cols == 1) {
 				if (col > 0) {
 					y += rowMaxH + gap;
 					col = 0;
 					rowMaxH = 0;
 				}
-				item.widget->setGeometry(pad, y, availW, item.preferredHeight);
-				y += item.preferredHeight + gap;
+				item.widget->setGeometry(pad + slideX, y, availW, itemH);
+				y += itemH + gap;
 			} else {
-				const int x = pad + col * (colW + gap);
-				item.widget->setGeometry(x, y, colW, item.preferredHeight);
-				rowMaxH = std::max(rowMaxH, item.preferredHeight);
+				const int x = pad + slideX + col * (colW + gap);
+				item.widget->setGeometry(x, y, colW, itemH);
+				rowMaxH = std::max(rowMaxH, itemH);
 				if (++col >= cols) {
 					y += rowMaxH + gap;
 					col = 0;
@@ -1998,6 +2155,11 @@ private:
 	QLabel *_empty = nullptr;
 	QLabel *_bannerLabel = nullptr;
 	QTimer *_bannerTimer = nullptr;
+	QVariantAnimation *_pageAnim = nullptr;
+	double _pageProgress = 1.0;
+	ProfileAvatar *_profileAvatar = nullptr;
+	QLabel *_profileName = nullptr;
+	QLabel *_profileStatus = nullptr;
 	QString _bannerText;
 	std::vector<TileItem> _items;
 	QList<QByteArray> _favorites;
@@ -2011,6 +2173,22 @@ private:
 QPointer<YandereWindow> ActiveWindow;
 
 } // namespace
+
+bool DrawerItemVisible(const QByteArray &id) {
+	const auto hidden = Core::App().settings().readPref<QByteArray>(kDrawerHiddenKey).split('\n');
+	return !hidden.contains(id);
+}
+
+void SetDrawerItemVisible(const QByteArray &id, bool visible) {
+	auto hidden = Core::App().settings().readPref<QByteArray>(kDrawerHiddenKey).split('\n');
+	hidden.removeAll(QByteArray());
+	hidden.removeAll(id);
+	if (!visible) hidden.push_back(id);
+	Core::App().settings().writePref<QByteArray>(
+		kDrawerHiddenKey,
+		QByteArrayList(hidden).join('\n'));
+	Core::App().saveSettingsDelayed();
+}
 
 void ShowYandereWindow(
 		not_null<Window::SessionController*> controller,

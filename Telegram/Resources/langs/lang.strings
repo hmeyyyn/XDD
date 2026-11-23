@@ -9906,3 +9906,5 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 "lng_yg_feed_refresh" = "Обновить ленту каналов";
 "lng_yg_feed_about" = "Общая хронологическая лента последних постов из ваших подписок.";
 "lng_look_avatar_radius_desc" = "0% — квадрат, 28% — скруглённый квадрат, 50% — круг.";
+"lng_yg_drawer_title" = "Левое меню";
+"lng_yg_drawer_about" = "Выберите пункты, которые будут показаны в левом меню. Применится при следующем открытии меню.";
