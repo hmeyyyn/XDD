@@ -615,6 +615,46 @@ PRIVATE
     core/deadlock_detector.h
     core/enhanced_settings.cpp
     core/enhanced_settings.h
+    custom/autistic/autistic_ignore.cpp
+    custom/autistic/autistic_ignore.h
+    custom/autistic/autistic_antiayu.cpp
+    custom/autistic/autistic_antiayu.h
+    custom/autistic/autistic_mode.cpp
+    custom/autistic/autistic_mode.h
+    custom/autistic/autistic_orig.cpp
+    custom/autistic/autistic_orig.h
+    custom/autistic/autistic_panel.cpp
+    custom/autistic/autistic_panel.h
+    custom/anti_spy.cpp
+    custom/anti_spy.h
+    custom/bot_mode_manager.cpp
+    custom/bot_mode_manager.h
+    custom/client_badge_detector.cpp
+    custom/client_badge_detector.h
+    custom/client_badge_popup.cpp
+    custom/client_badge_popup.h
+    custom/eternal_tags.cpp
+    custom/eternal_tags.h
+    custom/mention_pins.cpp
+    custom/mention_pins.h
+    custom/redesign.cpp
+    custom/redesign.h
+    custom/self_defense.cpp
+    custom/self_defense.h
+    custom/slowmode_tracker.cpp
+    custom/slowmode_tracker.h
+    custom/online_spam_filter.cpp
+    custom/online_spam_filter.h
+    custom/slowmode_queue.cpp
+    custom/slowmode_queue.h
+    custom/nickname_gradient.cpp
+    custom/nickname_gradient.h
+    custom/smooth_animations.cpp
+    custom/smooth_animations.h
+    custom/typing_indicator.cpp
+    custom/typing_indicator.h
+    boxes/peers/extremegram_mute_box.cpp
+    boxes/peers/extremegram_mute_box.h
     core/link_preview_rules.cpp
     core/link_preview_rules.h
     core/msg_extra_state.cpp

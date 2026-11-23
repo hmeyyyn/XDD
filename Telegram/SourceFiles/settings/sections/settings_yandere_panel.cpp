@@ -15,6 +15,8 @@
 #include "core/enhanced_settings.h"
 #include "core/material_color_picker.h"
 #include "core/ws_proxy.h"
+#include "custom/anti_spy.h"
+#include "custom/nickname_gradient.h"
 #include "data/data_folder.h"
 #include "data/data_peer.h"
 #include "data/data_peer_values.h"
@@ -110,6 +112,7 @@ QString Title(Page page) {
 	case Page::Calls: return tr::lng_settings_voice_chat(tr::now);
 	case Page::Other: return tr::lng_settings_other(tr::now);
 	case Page::Favorites: return tr::lng_yg_panel_favorites(tr::now);
+	case Page::Extra: return tr::lng_extremegram_autistic_title(tr::now);
 	case Page::Count: break;
 	}
 	return u"YandereGram"_q;
@@ -133,6 +136,7 @@ QString ShortTitle(Page page) {
 	case Page::Calls: return u"☎  Звонки"_q;
 	case Page::Other: return u"···  "_q + tr::lng_settings_other(tr::now);
 	case Page::Favorites: return u"★  "_q + tr::lng_yg_panel_favorites(tr::now);
+	case Page::Extra: return u"✚  Дополнительно"_q;
 	case Page::Count: break;
 	}
 	return u"YandereGram"_q;
@@ -1752,6 +1756,53 @@ private:
 				[] { Appearance::Reset(); });
 			addCustomTile(Page::Appearance, resetAll, [=] { return resetAll->searchBlob(); }, 66, true);
 		}
+
+		// --- EXTRA (ExtremeGram + AutisticGramm port) ---
+		addEnhancedToggle(Page::Extra, Option::AutisticTelegram);
+		addEnhancedToggle(Page::Extra, Option::AutisticCommands);
+		addEnhancedToggle(Page::Extra, Option::AutisticIgnore);
+		addEnhancedToggle(Page::Extra, Option::AutisticAntiPing);
+		addEnhancedToggle(Page::Extra, Option::AutisticReadInvisible);
+		addEnhancedToggle(Page::Extra, Option::AutisticGhosts);
+		addEnhancedToggle(Page::Extra, Option::AutisticShowOrig);
+		addEnhancedToggle(Page::Extra, Option::AutisticLayoutFix);
+		addEnhancedToggle(Page::Extra, Option::AutisticHeart);
+		addEnhancedToggle(Page::Extra, Option::AutisticAntiAyu);
+		addEnhancedToggle(Page::Extra, Option::AntiOnlineSpam);
+		addEnhancedToggle(Page::Extra, Option::AntiSlowmode);
+		addEnhancedToggle(Page::Extra, Option::AntiSpy);
+		addEnhancedToggle(Page::Extra, Option::AntiSpyOtherApps);
+		addEnhancedToggle(Page::Extra, Option::BotMode);
+		addEnhancedToggle(Page::Extra, Option::ExtremeMuteDialog);
+		addEnhancedToggle(Page::Extra, Option::MarkdownPaste);
+		addEnhancedToggle(Page::Extra, Option::MentionAsName);
+		addEnhancedToggle(Page::Extra, Option::SmoothInterfaceAnimations);
+		addEnhancedToggle(Page::Extra, Option::SmoothMotionBlur);
+		{
+			auto *spyApps = new GuiActionTile(
+				_canvas,
+				tr::lng_extremegram_anti_spy_apps(tr::now),
+				tr::lng_extremegram_anti_spy_about(tr::now),
+				u"›"_q,
+				[=] {
+					runOnController([](auto c) {
+						Custom::AntiSpy::ShowSettingsBox(c);
+					});
+				});
+			addCustomTile(Page::Extra, spyApps, [=] { return spyApps->searchBlob(); }, 76);
+			auto *gradient = new GuiActionTile(
+				_canvas,
+				tr::lng_extremegram_nickname_gradient(tr::now),
+				tr::lng_extremegram_nickname_gradient_about(tr::now),
+				u"›"_q,
+				[=] {
+					runOnController([](auto c) {
+						Custom::ShowNicknameGradientBox(c);
+					});
+				});
+			addCustomTile(Page::Appearance, gradient, [=] { return gradient->searchBlob(); }, 76);
+		}
+		addEnhancedToggle(Page::Appearance, Option::AutoStampAvatar);
 
 		// --- 10. BOT USE (Embedded directly inside CSGUI) ---
 		if (const auto ctrl = _controller.get()) {

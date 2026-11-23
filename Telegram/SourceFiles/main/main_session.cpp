@@ -8,6 +8,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "main/main_session.h"
 
 #include "core/enhanced_settings.h"
+#include "custom/client_badge_detector.h"
+#include "custom/eternal_tags.h"
+#include "custom/online_spam_filter.h"
+#include "custom/slowmode_queue.h"
+#include "custom/nickname_gradient.h"
 
 #include "apiwrap.h"
 #include "api/api_peer_colors.h"
@@ -276,6 +281,12 @@ Session::Session(
 	_api->requestNotifySettings(MTP_inputNotifyBroadcasts());
 
 	Core::App().downloadManager().trackSession(this);
+
+	(void)Custom::ClientBadgeFor(this);
+	(void)Custom::EternalTagsFor(this);
+	(void)Custom::OnlineSpamFor(this);
+	(void)Custom::SlowmodeQueueFor(this);
+	(void)Custom::NicknameGradientFor(this);
 
 	appConfig().value(
 	) | rpl::on_next([=] {

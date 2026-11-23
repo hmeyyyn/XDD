@@ -6,6 +6,8 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/appearance.h"
+#include "custom/client_badge_detector.h"
+#include "custom/nickname_gradient.h"
 #include "core/yg_features.h"
 #include "dialogs/ui/dialogs_layout.h"
 
@@ -981,16 +983,42 @@ void PaintRow(
 			paintPeerBadge(rowName.maxWidth());
 			badgeWidth = widthBefore - rectForName.width();
 		}
-		p.setPen(context.active
-			? st::dialogsNameFgActive
-			: context.selected
-			? st::dialogsNameFgOver
-			: st::dialogsNameFg);
+		auto clientBadgeWidth = 0;
+		if (!context.search) {
+			auto &detector = Custom::ClientBadgeFor(&from->owner().session());
+			if (detector.hasCustomClientBadge(from)) {
+				clientBadgeWidth = detector.badgeWidth(from);
+				rectForName.setWidth(rectForName.width() - clientBadgeWidth);
+			}
+		}
+		const auto nameGradient = Custom::NicknameGradientFor(
+			&from->owner().session()).configFor(from);
+		if (nameGradient) {
+			p.setPen(Custom::NicknameGradientFor(&from->owner().session())
+				.penFor(*nameGradient, rectForName.width()));
+		} else {
+			p.setPen(context.active
+				? st::dialogsNameFgActive
+				: context.selected
+				? st::dialogsNameFgOver
+				: st::dialogsNameFg);
+		}
 		rowName.draw(p, {
 			.position = rectForName.topLeft(),
 			.availableWidth = rectForName.width(),
 			.elisionLines = 1,
 		});
+		if (clientBadgeWidth) {
+			const auto nameW = std::min(rowName.maxWidth(), rectForName.width());
+			const auto badgeLeft = rectForName.left() + nameW + badgeWidth;
+			Custom::ClientBadgeFor(&from->owner().session()).drawBadgeGetWidth(
+				p, badgeLeft, rectForName.top(), st::semiboldFont->height, from,
+				context.active ? st::dialogsBgActive->c
+					: context.selected ? st::dialogsBgOver->c : st::dialogsBg->c,
+				(context.active ? st::dialogsNameFgActive
+					: context.selected ? st::dialogsNameFgOver : st::dialogsNameFg)->c,
+				nameGradient);
+		}
 		if (drawMuteIcon) {
 			const auto &muteIcon = ThreeStateIcon(
 				st::dialogsMuteIcon,

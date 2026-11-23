@@ -28,6 +28,7 @@ enum class PanelPage {
 	Calls,
 	Other,
 	Favorites,
+	Extra,
 	Count,
 };
 

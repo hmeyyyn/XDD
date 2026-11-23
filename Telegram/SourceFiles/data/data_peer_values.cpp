@@ -6,6 +6,7 @@ For license and copyright information please follow this link:
 https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/enhanced_settings.h"
+#include "custom/online_spam_filter.h"
 #include "data/data_peer_values.h"
 
 #include "lang/lang_keys.h"
@@ -532,6 +533,9 @@ QString OnlineText(not_null<UserData*> user, TimeId now) {
 	if (const auto special = OnlineTextSpecial(user)) {
 		return *special;
 	}
+	if (Custom::OnlineSpamFaked(user)) {
+		return tr::lng_status_online(tr::now);
+	}
 	return OnlineText(user->lastseen(), now);
 }
 
@@ -539,6 +543,8 @@ QString OnlineTextFull(not_null<UserData*> user, TimeId now) {
 	if (EnhancedSettings::Get(EnhancedSettings::Option::RelativeOnline)) return OnlineText(user, now);
 	if (const auto special = OnlineTextSpecial(user)) {
 		return *special;
+	} else if (Custom::OnlineSpamFaked(user)) {
+		return tr::lng_status_online(tr::now);
 	} else if (const auto common = OnlineTextCommon(user->lastseen(), now)) {
 		return *common;
 	}
@@ -559,6 +565,9 @@ QString OnlineTextFull(not_null<UserData*> user, TimeId now) {
 }
 
 bool OnlineTextActive(not_null<UserData*> user, TimeId now) {
+	if (Custom::OnlineSpamFaked(user)) {
+		return true;
+	}
 	return !user->isServiceUser()
 		&& !user->isBot()
 		&& user->lastseen().isOnline(now);
