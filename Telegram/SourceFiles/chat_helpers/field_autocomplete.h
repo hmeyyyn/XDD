@@ -23,6 +23,8 @@ class InputField;
 class ImportantTooltip;
 } // namespace Ui
 
+class PeerData;
+
 namespace Main {
 class Session;
 } // namespace Main
@@ -85,7 +87,9 @@ public:
 		ChooseMethod method = ChooseMethod::ByEnter;
 	};
 	struct BotCommandChosen {
-		not_null<UserData*> user;
+		// Null for Autistic mode commands (they are inserted into the
+		// field instead of being sent).
+		UserData *user = nullptr;
 		QString command;
 		ChooseMethod method = ChooseMethod::ByEnter;
 	};
@@ -94,6 +98,7 @@ public:
 		Mentions,
 		Hashtags,
 		BotCommands,
+		ModeCommands,
 		Stickers,
 	};
 
@@ -151,6 +156,7 @@ private:
 	void animationCallback();
 	void hideFinish();
 
+	[[nodiscard]] PeerData *peer() const;
 	void updateFiltered(bool resetScroll = false);
 	void recount(bool resetScroll = false);
 	[[nodiscard]] StickerRows getStickerSuggestions();
