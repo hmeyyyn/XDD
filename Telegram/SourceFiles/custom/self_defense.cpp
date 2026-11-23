@@ -8,7 +8,6 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "custom/self_defense.h"
 
 #include "settings.h"
-#include "storage/storage_device_binding.h"
 
 #include <QtCore/QDir>
 #include <QtCore/QFile>

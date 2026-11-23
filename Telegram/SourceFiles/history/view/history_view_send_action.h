@@ -61,6 +61,8 @@ public:
 		return _sendActionString;
 	}
 
+	[[nodiscard]] std::vector<not_null<UserData*>> typingUsers() const;
+
 private:
 	const not_null<History*> _history;
 	const MsgId _rootId = 0;

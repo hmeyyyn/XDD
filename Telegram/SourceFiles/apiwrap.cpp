@@ -6175,11 +6175,14 @@ void ApiWrap::requestBotCommonGroups(
 	}).send();
 }
 
-void ApiWrap::saveSelfBio(const QString &text) {
+void ApiWrap::saveSelfBio(const QString &text, Fn<void(bool)> done) {
 	if (_bio.requestId) {
 		if (text != _bio.requestedText) {
 			request(_bio.requestId).cancel();
 		} else {
+			if (done) {
+				done(true);
+			}
 			return;
 		}
 	}
@@ -6194,8 +6197,14 @@ void ApiWrap::saveSelfBio(const QString &text) {
 
 		_session->data().processUser(result);
 		_session->user()->setAbout(_bio.requestedText);
+		if (done) {
+			done(true);
+		}
 	}).fail([=] {
 		_bio.requestId = 0;
+		if (done) {
+			done(false);
+		}
 	}).send();
 }
 
