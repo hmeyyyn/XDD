@@ -371,5 +371,7 @@
   "lng_yg_dc_label": "Data center",
   "lng_yg_feed_refresh": "Refresh channels feed",
   "lng_yg_feed_about": "Unified chronological feed of recent posts from your subscribed channels.",
-  "lng_look_avatar_radius_desc": "0% — square, 28% — squircle, 50% — circle."
+  "lng_look_avatar_radius_desc": "0% — square, 28% — squircle, 50% — circle.",
+  "lng_yg_drawer_title": "Left menu",
+  "lng_yg_drawer_about": "Choose which items are shown in the left menu. Applies the next time you open it."
 }

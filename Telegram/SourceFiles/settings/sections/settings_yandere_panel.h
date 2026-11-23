@@ -38,6 +38,13 @@ void ToggleYandereWindow(not_null<Window::SessionController*> controller);
 [[nodiscard]] bool IsYandereWindowOpen();
 void ShowChannelsFeedBox(not_null<Window::SessionController*> controller);
 
+// Customisable left (main-menu) drawer items, edited from the
+// Customization page of the YandereGram panel. Ids: profile, create_group,
+// create_supergroup, create_channel, contacts, calls, saved, settings,
+// yandere, feed, night, phone, screenshot, ghost, streamer.
+[[nodiscard]] bool DrawerItemVisible(const QByteArray &id);
+void SetDrawerItemVisible(const QByteArray &id, bool visible);
+
 // Embedded fallback panel (all controls styled in CSGUI dark/crimson).
 class YanderePanel final : public Ui::RpWidget {
 public:

@@ -372,8 +372,11 @@ MainMenu::MainMenu(
 	}, shadow->lifetime());
 
 	_nightThemeSwitch.setCallback([this] {
-		Expects(_nightThemeToggle != nullptr);
-
+		if (!_nightThemeToggle) {
+			Window::Theme::ToggleNightMode();
+			Window::Theme::KeepApplied();
+			return;
+		}
 		const auto nightMode = Window::Theme::IsNightMode();
 		if (_nightThemeToggle->toggled() != nightMode) {
 			Window::Theme::ToggleNightMode();
@@ -683,6 +686,7 @@ void MainMenu::setupMenu() {
 			std::move(descriptor));
 	};
 	if (!_controller->session().supportMode()) {
+		if (Settings::DrawerItemVisible("profile")) {
 		_menu->add(
 			CreateButtonWithIcon(
 				_menu,
@@ -693,6 +697,7 @@ void MainMenu::setupMenu() {
 			controller->showSection(
 				Info::Stories::MakeMyProfile(controller->session().user()));
 		});
+		}
 
 		SetupMenuBots(_menu, controller);
 
@@ -700,7 +705,7 @@ void MainMenu::setupMenu() {
 			object_ptr<Ui::PlainShadow>(_menu),
 			{ 0, st::mainMenuSkip, 0, st::mainMenuSkip });
 
-		AddMyChannelsBox(addAction(
+		if (Settings::DrawerItemVisible("create_group")) AddMyChannelsBox(addAction(
 			tr::lng_create_group_title(),
 			{ &st::menuIconGroups }
 		), controller, true)->addClickHandler([=](Qt::MouseButton which) {
@@ -709,7 +714,7 @@ void MainMenu::setupMenu() {
 			}
 		});
 
-		AddMyChannelsBox(addAction(
+		if (Settings::DrawerItemVisible("create_supergroup")) AddMyChannelsBox(addAction(
 			tr::lng_create_supergroup_title(),
 			{ &st::menuIconGroups }
 		), controller, true)->addClickHandler([=](Qt::MouseButton which) {
@@ -718,7 +723,7 @@ void MainMenu::setupMenu() {
 			}
 		});
 
-		AddMyChannelsBox(addAction(
+		if (Settings::DrawerItemVisible("create_channel")) AddMyChannelsBox(addAction(
 			tr::lng_create_channel_title(),
 			{ &st::menuIconChannel }
 		), controller, false)->addClickHandler([=](Qt::MouseButton which) {
@@ -727,19 +732,19 @@ void MainMenu::setupMenu() {
 			}
 		});
 
-		addAction(
+		if (Settings::DrawerItemVisible("contacts")) addAction(
 			tr::lng_menu_contacts(),
 			{ &st::menuIconProfile }
 		)->setClickedCallback([=] {
 			controller->show(PrepareContactsBox(controller));
 		});
-		addAction(
+		if (Settings::DrawerItemVisible("calls")) addAction(
 			tr::lng_menu_calls(),
 			{ &st::menuIconPhone }
 		)->setClickedCallback([=] {
 			::Calls::ShowCallsBox(controller);
 		});
-		addAction(
+		if (Settings::DrawerItemVisible("saved")) addAction(
 			tr::lng_saved_messages(),
 			{ &st::menuIconSavedMessages }
 		)->setClickedCallback([=] {
@@ -791,14 +796,14 @@ void MainMenu::setupMenu() {
 			_controller->session().supportTemplates().reload();
 		});
 	}
-	addAction(
+	if (Settings::DrawerItemVisible("settings")) addAction(
 		tr::lng_menu_settings(),
 		{ &st::menuIconSettings }
 	)->setClickedCallback([=] {
 		controller->showSettings();
 	});
 
-	addAction(
+	if (Settings::DrawerItemVisible("yandere")) addAction(
 		tr::lng_yanderegram_settings_title(),
 		{ &st::menuIconYandereGram }
 	)->setClickedCallback([=] {
@@ -806,20 +811,20 @@ void MainMenu::setupMenu() {
 		Settings::ShowYandereWindow(controller);
 	});
 
-	addAction(
+	if (Settings::DrawerItemVisible("feed")) addAction(
 		tr::lng_yg_cat_feed(),
 		{ &st::menuIconChannel }
 	)->setClickedCallback([=] {
 		Settings::ShowChannelsFeedBox(controller);
 	});
 
-	_nightThemeToggle = addAction(
+	if (Settings::DrawerItemVisible("night")) _nightThemeToggle = addAction(
 		tr::lng_menu_night_mode(),
 		{ &st::menuIconNightMode }
 	)->toggleOn(_nightThemeSwitches.events_starting_with(
 		Window::Theme::IsNightMode()
 	));
-	_nightThemeToggle->toggledChanges(
+	if (_nightThemeToggle) _nightThemeToggle->toggledChanges(
 	) | rpl::filter([=](bool night) {
 		return (night != Window::Theme::IsNightMode());
 	}) | rpl::on_next([=](bool night) {
@@ -843,12 +848,12 @@ void MainMenu::setupMenu() {
 			toggle);
 	}, _nightThemeToggle->lifetime());
 
-	_showPhoneToggle = addAction(
+	if (Settings::DrawerItemVisible("phone")) _showPhoneToggle = addAction(
 		tr::lng_settings_show_phone_number(),
 		{ &st::menuIconPhone }
 	)->toggleOn(rpl::single(EnhancedSettings::Get(EnhancedSettings::Option::ShowPhoneNumber)));
 
-	_showPhoneToggle->toggledChanges(
+	if (_showPhoneToggle) _showPhoneToggle->toggledChanges(
 	) | rpl::filter([=](bool showPhone) {
 		return (showPhone != EnhancedSettings::Get(EnhancedSettings::Option::ShowPhoneNumber));
 	}) | rpl::on_next([=](bool showPhone) {
@@ -857,12 +862,12 @@ void MainMenu::setupMenu() {
 			showPhone);
 	}, _showPhoneToggle->lifetime());
 
-	_screenshotToggle = addAction(
+	if (Settings::DrawerItemVisible("screenshot")) _screenshotToggle = addAction(
 		tr::lng_settings_screen_shot_mode(),
 		{ &st::menuIconLock }
 	)->toggleOn(rpl::single(EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode)));
 
-	_screenshotToggle->toggledChanges(
+	if (_screenshotToggle) _screenshotToggle->toggledChanges(
 	) | rpl::filter([=](bool screenShotMode) {
 		return (screenShotMode != EnhancedSettings::Get(EnhancedSettings::Option::ScreenshotMode));
 	}) | rpl::on_next([=](bool screenShotMode) {
@@ -871,29 +876,31 @@ void MainMenu::setupMenu() {
 			screenShotMode);
 	}, lifetime());
 
-	const auto ghostToggle = addAction(
+	Ui::SettingsButton *ghostToggle = nullptr;
+	if (Settings::DrawerItemVisible("ghost")) ghostToggle = addAction(
 		tr::lng_yg_ghost_mode(),
 		{ &st::menuIconYandereGram }
 	)->toggleOn(EnhancedSettings::Watch(EnhancedSettings::Option::GhostMode));
-	ghostToggle->toggledChanges(
+	if (ghostToggle) ghostToggle->toggledChanges(
 	) | rpl::filter([](bool on) {
 		return (on != EnhancedSettings::Get(EnhancedSettings::Option::GhostMode));
 	}) | rpl::on_next([=](bool on) {
 		EnhancedSettings::ApplyOption(controller, EnhancedSettings::Option::GhostMode, on);
 	}, ghostToggle->lifetime());
 
-	const auto streamerToggle = addAction(
+	Ui::SettingsButton *streamerToggle = nullptr;
+	if (Settings::DrawerItemVisible("streamer")) streamerToggle = addAction(
 		tr::lng_yg_streamer_mode(),
 		{ &st::menuIconLock }
 	)->toggleOn(EnhancedSettings::Watch(EnhancedSettings::Option::StreamerMode));
-	streamerToggle->toggledChanges(
+	if (streamerToggle) streamerToggle->toggledChanges(
 	) | rpl::filter([](bool on) {
 		return (on != EnhancedSettings::Get(EnhancedSettings::Option::StreamerMode));
 	}) | rpl::on_next([=](bool on) {
 		EnhancedSettings::ApplyOption(controller, EnhancedSettings::Option::StreamerMode, on);
 	}, streamerToggle->lifetime());
 
-	Core::App().settings().systemDarkModeValue(
+	if (_nightThemeToggle) Core::App().settings().systemDarkModeValue(
 	) | rpl::on_next([=](std::optional<bool> darkMode) {
 		const auto darkModeEnabled
 			= Core::App().settings().systemDarkModeEnabled();
