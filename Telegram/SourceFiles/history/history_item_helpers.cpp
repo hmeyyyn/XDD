@@ -777,7 +777,7 @@ TextWithEntities DropDisallowedCustomEmoji(
 			if (entity.type() != EntityType::CustomEmoji) continue;
 			const auto id = Data::ParseCustomEmojiData(entity.data());
 			if (!id) continue;
-			const auto replacement = u":"_q + QString::number(id.bare) + u":"_q;
+			const auto replacement = u":"_q + QString::number(id) + u":"_q;
 			text.text.replace(entity.offset(), entity.length(), replacement);
 		}
 		text.entities.erase(
