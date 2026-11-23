@@ -119,6 +119,7 @@ enum class OptionId {
 	UploadBoost,
 	WsProxyEnabled,
 	FeedHideArchived,
+	LocalPremium,
 	Count,
 };
 
@@ -262,6 +263,7 @@ inline constexpr auto UploadBoost = Key<bool>{ OptionId::UploadBoost };
 inline constexpr auto WsProxyEnabled = Key<bool>{ OptionId::WsProxyEnabled };
 inline constexpr auto FeedHideArchived
 	= Key<bool>{ OptionId::FeedHideArchived };
+inline constexpr auto LocalPremium = Key<bool>{ OptionId::LocalPremium };
 } // namespace Option
 
 enum class ExtraContextMenuOption : int {

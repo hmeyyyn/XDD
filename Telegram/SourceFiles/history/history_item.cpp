@@ -5075,6 +5075,36 @@ void HistoryItem::clearRichPage() {
 }
 
 void HistoryItem::setTextValue(TextWithEntities text, bool force) {
+	if (EnhancedSettings::Get(EnhancedSettings::Option::LocalPremium)) {
+		// Render plain ":id:" codes (sent by other YandereGram clients
+		// with Local Premium) back as premium custom emoji.
+		static const auto pattern = QRegularExpression(u":(\\d{5,}):"_q);
+		auto match = pattern.globalMatch(text.text);
+		std::vector<EntityInText> extra;
+		while (match.hasNext()) {
+			const auto m = match.next();
+			bool covered = false;
+			for (const auto &e : text.entities) {
+				if (m.capturedStart() >= e.offset()
+					&& m.capturedStart() < e.offset() + e.length()) {
+					covered = true;
+					break;
+				}
+			}
+			if (!covered) {
+				extra.push_back({
+					EntityType::CustomEmoji,
+					int(m.capturedStart()),
+					int(m.capturedLength()),
+					m.captured(1) });
+			}
+		}
+		for (auto &e : extra) text.entities.push_back(std::move(e));
+		std::sort(text.entities.begin(), text.entities.end(),
+			[](const EntityInText &a, const EntityInText &b) {
+				return a.offset() < b.offset();
+			});
+	}
 	if (EnhancedSettings::Get(EnhancedSettings::Option::FilterZalgo)) {
 		Core::YgFeatures::FilterZalgoEntities(text);
 	}

@@ -7,6 +7,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "history/history_item_helpers.h"
 
+#include <algorithm>
+
+#include "core/enhanced_settings.h"
+
 #include "api/api_reactions_notify_settings.h"
 #include "api/api_text_entities.h"
 #include "boxes/premium_preview_box.h"
@@ -760,6 +764,29 @@ void ConfirmDeleteSelectedEphemeral(
 TextWithEntities DropDisallowedCustomEmoji(
 		not_null<PeerData*> to,
 		TextWithEntities text) {
+	// Local Premium: premium emoji are sent as plain ":id:" text, so
+	// other YandereGram clients render them back as premium emoji and
+	// other clients just see the :id: code.
+	if (EnhancedSettings::Get(EnhancedSettings::Option::LocalPremium)
+		&& !to->session().user()->isPremium()) {
+		auto entities = text.entities;
+		std::sort(entities.begin(), entities.end(), [](const EntityInText &a, const EntityInText &b) {
+			return a.offset() > b.offset();
+		});
+		for (const auto &entity : entities) {
+			if (entity.type() != EntityType::CustomEmoji) continue;
+			const auto id = Data::ParseCustomEmojiData(entity.data());
+			if (!id) continue;
+			const auto replacement = u":"_q + QString::number(id) + u":"_q;
+			text.text.replace(entity.offset(), entity.length(), replacement);
+		}
+		text.entities.erase(
+			ranges::remove_if(text.entities, [](const EntityInText &e) {
+				return e.type() == EntityType::CustomEmoji;
+			}),
+			text.entities.end());
+		return text;
+	}
 	if (to->session().premium() || to->isSelf()) {
 		return text;
 	}

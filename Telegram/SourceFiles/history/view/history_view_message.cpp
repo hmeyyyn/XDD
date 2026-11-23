@@ -1853,6 +1853,10 @@ void Message::draw(Painter &p, const PaintContext &context) const {
 	if (isHidden()) {
 		return;
 	}
+	// Locally deleted messages stay as translucent ghosts.
+	const auto ghostOpacity = item->isLocallyDeleted()
+		? std::make_unique<ScopedPainterOpacity>(p, 0.45)
+		: nullptr;
 
 	const auto entry = logEntryOriginal();
 	const auto check = factcheckBlock();

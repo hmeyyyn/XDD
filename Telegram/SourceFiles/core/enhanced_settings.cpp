@@ -231,6 +231,8 @@ Descriptor Integer(
 			return &tr::lng_yg_ws_proxy_desc;
 		case OptionId::FeedHideArchived:
 			return &tr::lng_yg_feed_hide_archived_desc;
+		case OptionId::LocalPremium:
+			return &tr::lng_yg_local_premium_desc;
 		case OptionId::SaveDeleted:
 		case OptionId::SaveEdits:
 		case OptionId::ExactCounts:
@@ -526,7 +528,9 @@ const DescriptorList &DescriptorData() {
 		Bool(OptionId::UploadBoost, "upload_boost",
 			&tr::lng_yg_upload_boost, "enhanced/upload-boost"),
 		Bool(OptionId::WsProxyEnabled, "ws_proxy_enabled",
-			&tr::lng_yg_ws_proxy, "enhanced/ws-proxy"),
+			&tr::lng_yg_ws_proxy, "enhanced/ws-proxy", {}, false, true),
+		Bool(OptionId::LocalPremium, "local_premium",
+			&tr::lng_yg_local_premium, "enhanced/local-premium"),
 		Bool(OptionId::FeedHideArchived, "feed_hide_archived",
 			&tr::lng_yg_feed_hide_archived, "enhanced/feed-hide-archived",
 			{}, false, true),

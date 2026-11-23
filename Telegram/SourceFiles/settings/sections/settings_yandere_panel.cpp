@@ -115,6 +115,29 @@ QString Title(Page page) {
 	return u"YandereGram"_q;
 }
 
+QString ShortTitle(Page page) {
+	// Short one-word sidebar labels (Larp Client style) so nothing is
+	// clipped mid-word; the full name stays in the tooltip / heading.
+	switch (page) {
+	case Page::Interface: return u"◐  "_q + tr::lng_settings_interface(tr::now);
+	case Page::Messages: return u"✉  "_q + tr::lng_settings_messages(tr::now);
+	case Page::Ghost: return u"◔  Призрак"_q;
+	case Page::Streamer: return u"●  Стример"_q;
+	case Page::Behavior: return u"⚙  "_q + tr::lng_settings_behavior(tr::now);
+	case Page::Network: return u"⇅  Сеть"_q;
+	case Page::Feed: return u"≡  Лента"_q;
+	case Page::Journal: return u"🗑  Журнал"_q;
+	case Page::Appearance: return u"✦  "_q + tr::lng_settings_enhanced_customization(tr::now);
+	case Page::BotUse: return u"🤖  Боты"_q;
+	case Page::Translation: return u"文  "_q + tr::lng_settings_translation(tr::now);
+	case Page::Calls: return u"☎  Звонки"_q;
+	case Page::Other: return u"···  "_q + tr::lng_settings_other(tr::now);
+	case Page::Favorites: return u"★  "_q + tr::lng_yg_panel_favorites(tr::now);
+	case Page::Count: break;
+	}
+	return u"YandereGram"_q;
+}
+
 QString OptionDesc(EnhancedSettings::OptionId id) {
 	const auto &d = EnhancedSettings::DescriptorFor(id);
 	return d.description ? (*d.description)(tr::now) : QString();
@@ -1114,7 +1137,7 @@ private:
 		for (int i = 0; i < int(Page::Count); ++i) {
 			const auto pg = Page(i);
 			const auto name = Title(pg);
-			auto *b = new QPushButton(name, _navContainer);
+			auto *b = new QPushButton(ShortTitle(pg), _navContainer);
 			b->setObjectName(u"ygNav"_q);
 			b->setCheckable(true);
 			b->setCursor(Qt::PointingHandCursor);
@@ -1416,6 +1439,7 @@ private:
 		addEnhancedToggle(Page::Streamer, Option::StreamerHideSensitive);
 		addEnhancedToggle(Page::Streamer, Option::StreamerHidePrivateChats);
 		addEnhancedToggle(Page::Streamer, Option::StreamerMuteNotifications);
+		addEnhancedToggle(Page::Streamer, Option::AllowScreenshots, tr::lng_yg_allow_screenshots(tr::now));
 
 		// --- 5. BEHAVIOR ---
 		addEnhancedToggle(Page::Behavior, Option::OnlineSpam);
@@ -1522,6 +1546,7 @@ private:
 		}
 
 		// --- 9. CUSTOMIZATION (APPEARANCE + CLIENT STYLE + BADGE ROLE + MATERIAL YOU + AVATAR RADIUS) ---
+		addEnhancedToggle(Page::Appearance, Option::LocalPremium);
 		{
 			auto *preview = new GuiPreviewTile(_canvas);
 			addCustomTile(Page::Appearance, preview, [=] { return preview->searchBlob(); }, 98, true);
@@ -1623,13 +1648,9 @@ private:
 					Appearance::Changes());
 				addCustomTile(Page::Appearance, ct, [=] { return ct->searchBlob(); }, 66);
 			};
+			// Only the mod accent colour stays configurable; the rest
+			// of the palette follows the client theme.
 			addTint(Appearance::Tint::Accent, tr::lng_look_accent);
-			addTint(Appearance::Tint::SettingsBg, tr::lng_look_settingsbg);
-			addTint(Appearance::Tint::Surface, tr::lng_look_surface);
-			addTint(Appearance::Tint::Ink, tr::lng_look_ink);
-			addTint(Appearance::Tint::Incoming, tr::lng_look_incoming);
-			addTint(Appearance::Tint::Outgoing, tr::lng_look_outgoing);
-			addTint(Appearance::Tint::Wallpaper, tr::lng_look_wallpaper);
 
 			auto *resetPal = new GuiActionTile(
 				_canvas,
@@ -1735,13 +1756,13 @@ private:
 		// --- 10. BOT USE (Embedded directly inside CSGUI) ---
 		if (const auto ctrl = _controller.get()) {
 			auto *mgr = &ctrl->session().domain().botUse();
-			const auto addBotOpt = [&](BotUse::Settings::Key<bool> key) {
+			const auto addBotOpt = [&](BotUse::Settings::Key<bool> key, const QString &about) {
 				const auto title = BotUse::Settings::OptionTitle(key.id);
 				auto *tile = new GuiToggleTile(
 					_canvas,
 					BotUse::Settings::ControlId(key.id).toUtf8(),
 					title,
-					{},
+					about,
 					[=] {
 						const auto c = _controller.get();
 						return c ? c->session().domain().botUse().option(key) : false;
@@ -1756,9 +1777,9 @@ private:
 					nullptr);
 				addCustomTile(Page::BotUse, tile, [=] { return tile->searchBlob(); }, 74);
 			};
-			addBotOpt(BotUse::Settings::Option::DisableTypingStatus);
-			addBotOpt(BotUse::Settings::Option::AutoSwitchRichEditor);
-			addBotOpt(BotUse::Settings::Option::AllowReplyAndRepeatBots);
+			addBotOpt(BotUse::Settings::Option::DisableTypingStatus, tr::lng_yg_bot_typing_desc(tr::now));
+			addBotOpt(BotUse::Settings::Option::AutoSwitchRichEditor, tr::lng_yg_bot_rich_desc(tr::now));
+			addBotOpt(BotUse::Settings::Option::AllowReplyAndRepeatBots, tr::lng_yg_bot_reply_desc(tr::now));
 
 			auto *manageBots = new GuiActionTile(
 				_canvas,
@@ -2252,7 +2273,7 @@ YanderePanel::YanderePanel(
 	for (int i = 0; i < int(Page::Count); ++i) {
 		const auto page = Page(i);
 		const auto name = Title(page);
-		auto *nav = new QPushButton(name, this);
+		auto *nav = new QPushButton(ShortTitle(page), this);
 		nav->setCheckable(true);
 		nav->setAccessibleName(name);
 		nav->setToolTip(name);
