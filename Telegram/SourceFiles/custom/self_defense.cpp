@@ -131,7 +131,11 @@ void OpenKeyFiles() {
 		}
 	}
 	OpenHandleValue(_keyHandle, path);
-	OpenHandleValue(_secretHandle, Storage::DeviceSecretPath(_dataName));
+	#ifdef Q_OS_WIN
+	OpenHandleValue(_secretHandle, cWorkingDir() + u"tdata/device_"_q + _dataName);
+#else // Q_OS_WIN
+	OpenHandleValue(_secretHandle, cWorkingDir() + u"device_"_q + _dataName);
+#endif // Q_OS_WIN
 }
 
 void CloseKeyFiles() {
