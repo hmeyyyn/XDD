@@ -516,7 +516,7 @@ bool BotModeManager::interceptCommand(
 			return false;
 		}
 		if (controller) {
-			auto text = QString::fromUtf8("Команды ExtremeGram:");
+			auto text = QString::fromUtf8("Команды YandereGram:");
 			for (const auto &[command, hint] : CommandHints()) {
 				text += QString::fromUtf8("\n!%1 — %2").arg(command, hint);
 			}

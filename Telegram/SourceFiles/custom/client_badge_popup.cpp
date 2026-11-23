@@ -87,7 +87,7 @@ BadgePopup::BadgePopup(QWidget *parent, QImage icon, QRect anchor)
 	setCursor(style::cur_pointer);
 	setAttribute(Qt::WA_ShowWithoutActivating);
 
-	_title = u"ExtremeGram"_q;
+	_title = u"YandereGram"_q;
 	_subtitle = tr::lng_extremegram_badge_clicked(tr::now);
 
 	const auto iconSize = style::ConvertScale(kIconSize);

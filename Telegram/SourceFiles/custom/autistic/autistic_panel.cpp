@@ -198,7 +198,7 @@ void Panel::paintEvent(QPaintEvent *) {
 			card.width() - style::ConvertScale(28),
 			st::semiboldFont->height),
 		Qt::AlignVCenter | Qt::AlignLeft,
-		QString::fromUtf8("Autistic Telegram"));
+		QString::fromUtf8("Дополнительно"));
 }
 
 bool Panel::eventFilter(QObject *object, QEvent *event) {

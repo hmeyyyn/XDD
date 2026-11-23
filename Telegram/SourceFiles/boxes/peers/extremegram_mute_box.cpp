@@ -148,19 +148,19 @@ void SendMuteMessage(
 
 } // namespace
 
-void ShowExtremeGramMuteBox(
+void ShowEnhancedMuteBox(
 		not_null<Window::SessionController*> controller,
 		not_null<ChannelData*> channel,
 		not_null<UserData*> user,
 		ChatRestrictionsInfo oldRights) {
-	ShowExtremeGramMuteBox(
+	ShowEnhancedMuteBox(
 		controller->uiShow(),
 		channel,
 		user,
 		oldRights);
 }
 
-void ShowExtremeGramMuteBox(
+void ShowEnhancedMuteBox(
 		std::shared_ptr<Ui::Show> show,
 		not_null<ChannelData*> channel,
 		not_null<UserData*> user,

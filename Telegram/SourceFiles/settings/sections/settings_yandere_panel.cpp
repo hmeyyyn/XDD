@@ -1757,7 +1757,7 @@ private:
 			addCustomTile(Page::Appearance, resetAll, [=] { return resetAll->searchBlob(); }, 66, true);
 		}
 
-		// --- EXTRA (ExtremeGram + AutisticGramm port) ---
+		// --- EXTRA (additional features) ---
 		addEnhancedToggle(Page::Extra, Option::AutisticTelegram);
 		addEnhancedToggle(Page::Extra, Option::AutisticCommands);
 		addEnhancedToggle(Page::Extra, Option::AutisticIgnore);

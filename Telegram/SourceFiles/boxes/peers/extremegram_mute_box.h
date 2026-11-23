@@ -23,13 +23,13 @@ namespace Window {
 class SessionController;
 } // namespace Window
 
-void ShowExtremeGramMuteBox(
+void ShowEnhancedMuteBox(
 	not_null<Window::SessionController*> controller,
 	not_null<ChannelData*> channel,
 	not_null<UserData*> user,
 	ChatRestrictionsInfo oldRights);
 
-void ShowExtremeGramMuteBox(
+void ShowEnhancedMuteBox(
 	std::shared_ptr<Ui::Show> show,
 	not_null<ChannelData*> channel,
 	not_null<UserData*> user,
