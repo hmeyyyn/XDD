@@ -313,6 +313,7 @@ inline constexpr auto AntiSlowmode = Key<bool>{ OptionId::AntiSlowmode };
 inline constexpr auto SmoothMotionBlur = Key<bool>{ OptionId::SmoothMotionBlur };
 inline constexpr auto AntiSpy = Key<bool>{ OptionId::AntiSpy };
 inline constexpr auto AntiSpyOtherApps = Key<bool>{ OptionId::AntiSpyOtherApps };
+inline constexpr auto AntiSpyApps = Key<QList<int>>{ OptionId::AntiSpyApps };
 
 } // namespace Option
 

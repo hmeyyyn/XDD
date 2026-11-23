@@ -6,6 +6,10 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "core/msg_extra_state.h"
 
+#include "core/enhanced_settings.h"
+#include "custom/autistic/autistic_ignore.h"
+#include "custom/autistic/autistic_mode.h"
+
 #include "core/chat_enhanced_settings.h"
 #include "data/data_forum_topic.h"
 #include "data/data_session.h"
@@ -15,6 +19,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include <algorithm>
 #include <map>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace MessageExtraState {
 namespace {
@@ -389,4 +395,44 @@ rpl::producer<PeerId> changes() {
 	return changed.events();
 }
 
+namespace {
+
+std::unordered_map<PeerId, std::unordered_set<MsgId>> ghosted;
+
+} // namespace
+
+bool IsGhosted(not_null<HistoryItem*> item) {
+	if (!item->isRegular() || item->isService()) {
+		return false;
+	}
+	const auto i = ghosted.find(item->history()->peer->id);
+	if (i == ghosted.end()) {
+		return false;
+	}
+	return i->second.contains(item->id);
+}
+
+void MarkGhosted(not_null<HistoryItem*> item) {
+	if (!item->isRegular()
+		|| item->isService()
+		|| IsGhosted(item)) {
+		return;
+	}
+	ghosted[item->history()->peer->id].insert(item->id);
+	item->history()->owner().notifyItemDataChange(item);
+}
+
 } // namespace MessageExtraState
+
+namespace Autistic {
+
+// Ignored peers' messages collapse into an empty slot in every chat.
+bool ShouldCollapseIgnored(not_null<HistoryItem*> item) {
+	return on(EnhancedSettings::Option::AutisticIgnore)
+		&& item->isRegular()
+		&& !item->isService()
+		&& !item->out()
+		&& IsIgnored(item->from());
+}
+
+} // namespace Autistic
