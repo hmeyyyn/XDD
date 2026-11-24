@@ -529,6 +529,9 @@ const DescriptorList &DescriptorData() {
 			&tr::lng_yg_upload_boost, "enhanced/upload-boost"),
 		Bool(OptionId::WsProxyEnabled, "ws_proxy_enabled",
 			&tr::lng_yg_ws_proxy, "enhanced/ws-proxy", {}, false, true),
+		Bool(OptionId::FeedHideArchived, "feed_hide_archived",
+			&tr::lng_yg_feed_hide_archived, "enhanced/feed-hide-archived",
+			{}, false, true),
 		Bool(OptionId::LocalPremium, "local_premium",
 			&tr::lng_yg_local_premium, "enhanced/local-premium"),
 		Bool(OptionId::SmoothInterfaceAnimations, "smooth_interface_animations",
@@ -589,9 +592,6 @@ const DescriptorList &DescriptorData() {
 			.title = &tr::lng_extremegram_anti_spy_apps,
 			.defaultValue = QList<int>(),
 		},
-		Bool(OptionId::FeedHideArchived, "feed_hide_archived",
-			&tr::lng_yg_feed_hide_archived, "enhanced/feed-hide-archived",
-			{}, false, true),
 	});
 	return result;
 }
