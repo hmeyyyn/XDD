@@ -1,0 +1,158 @@
+/*
+This file is part of Telegram Desktop,
+the official desktop application for the Telegram messaging service.
+
+For license and copyright information please follow this link:
+https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
+*/
+#include "custom/smooth_animations.h"
+
+#include "core/enhanced_settings.h"
+#include "history/history_item.h"
+#include "history/view/history_view_element.h"
+
+#include <algorithm>
+#include <cmath>
+#include <vector>
+
+namespace Custom::Animations {
+namespace {
+
+constexpr auto kAppearDurationMs = crl::time(420);
+constexpr auto kMaxAppearStates = 256;
+
+struct MessageAppearState {
+	Ui::Animations::Simple progress;
+	bool finished = false;
+};
+
+class AppearRegistry final {
+public:
+	void registerNewItem(FullMsgId itemId, Fn<void()> repaintCallback) {
+		if (!EnhancedSettings::Get(
+				EnhancedSettings::Option::SmoothInterfaceAnimations)) {
+			return;
+		}
+		pruneStates();
+		auto &entry = _states[itemId];
+		if (entry.finished || entry.progress.animating()) {
+			return;
+		}
+		entry.progress.start(
+			[=, this] {
+				if (repaintCallback) {
+					repaintCallback();
+				}
+				const auto it = _states.find(itemId);
+				if (it != _states.end() && !it->second.progress.animating()) {
+					it->second.finished = true;
+				}
+			},
+			0.0,
+			1.0,
+			kAppearDurationMs,
+			CubicSmoothOut);
+	}
+
+	[[nodiscard]] std::optional<PaintTransform> currentTransform(
+			FullMsgId itemId) {
+		if (!EnhancedSettings::Get(
+				EnhancedSettings::Option::SmoothInterfaceAnimations)) {
+			_states.clear();
+			return std::nullopt;
+		}
+		const auto it = _states.find(itemId);
+		if (it == _states.end() || it->second.finished) {
+			return std::nullopt;
+		}
+		const auto val = it->second.progress.value(1.0);
+		if (val >= 0.999 && !it->second.progress.animating()) {
+			_states.erase(it);
+			return std::nullopt;
+		}
+		return ComputeMessageAppear(val);
+	}
+
+private:
+	void pruneStates() {
+		if (_states.size() < kMaxAppearStates) {
+			return;
+		}
+		auto finished = std::vector<FullMsgId>();
+		for (const auto &[id, state] : _states) {
+			if (state.finished) {
+				finished.push_back(id);
+			}
+		}
+		for (const auto &id : finished) {
+			_states.erase(id);
+		}
+		while (_states.size() >= kMaxAppearStates) {
+			_states.erase(_states.begin());
+		}
+	}
+
+	base::flat_map<FullMsgId, MessageAppearState> _states;
+};
+
+AppearRegistry &GlobalAppearRegistry() {
+	static AppearRegistry instance;
+	return instance;
+}
+
+} // namespace
+
+void NotifyMessageAdded(not_null<HistoryItem*> item, Fn<void()> repaint) {
+	GlobalAppearRegistry().registerNewItem(item->fullId(), std::move(repaint));
+}
+
+void ApplyElementPaintTransform(
+		QPainter &p,
+		not_null<const HistoryView::Element*> view,
+		QRect clipRect,
+		Fn<void()> paintBody) {
+	const auto item = view->data();
+	const auto transform = GlobalAppearRegistry().currentTransform(
+		item->fullId());
+	if (!transform) {
+		paintBody();
+		return;
+	}
+
+	p.save();
+	p.setOpacity(p.opacity() * transform->opacity);
+	const auto center = QPointF(
+		clipRect.left()
+			+ (view->hasOutLayout()
+				? clipRect.width() * 0.85
+				: clipRect.width() * 0.15),
+		clipRect.center().y());
+	p.translate(0.0, transform->translateY);
+	p.translate(center);
+	p.scale(transform->scale, transform->scale);
+	p.translate(-center);
+
+	const auto blur = (std::abs(transform->translateY) > 2.0)
+		&& EnhancedSettings::Get(
+			EnhancedSettings::Option::SmoothMotionBlur);
+	if (blur) {
+		constexpr auto kTrailSamples = 3;
+		const auto baseOpacity = p.opacity();
+		const auto smear = std::clamp(
+			transform->translateY * 0.55,
+			-14.0,
+			14.0);
+		for (auto i = 0; i != kTrailSamples; ++i) {
+			const auto k = (i + 1) / float64(kTrailSamples);
+			p.setOpacity(baseOpacity * (1.0 - 0.62 * k));
+			p.translate(0.0, smear * k);
+			paintBody();
+			p.translate(0.0, -smear * k);
+		}
+		p.setOpacity(baseOpacity);
+	}
+	paintBody();
+	p.restore();
+}
+
+} // namespace Custom::Animations

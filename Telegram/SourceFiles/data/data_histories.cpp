@@ -7,6 +7,9 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "data/data_histories.h"
 
+#include "custom/autistic/autistic_antiayu.h"
+#include "custom/autistic/autistic_mode.h"
+
 #include "api/api_text_entities.h"
 #include "core/yg_features.h"
 #include "data/business/data_shortcut_messages.h"
@@ -329,6 +332,15 @@ void Histories::readInboxTill(
 
 	Core::App().notifications().clearIncomingFromHistory(history);
 
+	if (Autistic::on(EnhancedSettings::Option::AutisticReadInvisible)) {
+		if (IsServerMsgId(tillId)) {
+			history->setInboxReadTill(tillId);
+			history->setUnreadCount(
+				history->countStillUnreadLocal(tillId).value_or(0));
+			history->updateChatListEntry();
+		}
+		return;
+	}
 	const auto needsRequest = history->readInboxTillNeedsRequest(tillId);
 	if (!needsRequest && !force) {
 		DEBUG_LOG(("Reading: readInboxTill finish 1."));
@@ -1059,6 +1071,10 @@ void Histories::deleteMessages(const MessageIdsList &ids, bool revoke) {
 				continue;
 			} else if (item->isEphemeral()) {
 				_owner->session().ephemeralMessages().deleteMessage(item);
+				continue;
+			}
+			if (item->isRegular() && Autistic::ShouldTaunt(item)) {
+				Autistic::TauntDelete(item, revoke);
 				continue;
 			}
 			remove.push_back(item);

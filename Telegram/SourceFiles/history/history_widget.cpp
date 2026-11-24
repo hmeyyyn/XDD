@@ -10,6 +10,11 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/yg_features.h"
 #include "history/history_widget.h"
 
+#include "custom/autistic/autistic_mode.h"
+#include "custom/autistic/layout_converter.h"
+#include "custom/bot_mode_manager.h"
+#include "custom/mention_pins.h"
+
 #include "api/api_compose_with_ai.h"
 #include "api/api_editing.h"
 #include "api/api_bot.h"
@@ -6439,6 +6444,33 @@ void HistoryWidget::sendTextWithTags(
 
 	auto message = Api::MessageToSend(prepareSendAction(options));
 	message.textWithTags = textWithTags;
+	if (!options.scheduled
+		&& _history
+		&& Custom::BotModeFor(&session()).interceptCommand(
+			_history,
+			textWithTags.text,
+			message.action.replyTo.messageId,
+			controller())) {
+		clearFieldText();
+		saveDraftWithTextNow();
+		if (done) {
+			done();
+		}
+		return;
+	}
+	if (EnhancedSettings::Get(EnhancedSettings::Option::MentionAsName)) {
+		message.textWithTags = Custom::ApplyMentionNames(
+			&session(),
+			std::move(message.textWithTags));
+	}
+	if (!options.scheduled
+		&& Autistic::on(EnhancedSettings::Option::AutisticLayoutFix)) {
+		const auto utf16 = message.textWithTags.text.toStdU16String();
+		if (Autistic::NeedsLayoutFix(utf16)) {
+			message.textWithTags.text = QString::fromStdU16String(
+				Autistic::FixKeyboardLayout(utf16));
+		}
+	}
 	if (const auto bot = BotUse::Selected(_history)) {
 		if (const auto error = BotUse::ValidateSend(bot, message.action)) {
 			BotUse::ShowSendError(_history, error);

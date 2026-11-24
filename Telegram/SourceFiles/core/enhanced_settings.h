@@ -120,6 +120,31 @@ enum class OptionId {
 	WsProxyEnabled,
 	FeedHideArchived,
 	LocalPremium,
+	SmoothInterfaceAnimations,
+	BotMode,
+	AutoStampAvatar,
+	ExtremeMuteDialog,
+	MarkdownPaste,
+	MentionAsName,
+	RedesignMode,
+	OnlineSpamInterval,
+	AutisticTelegram,
+	AutisticCommands,
+	AutisticIgnore,
+	AutisticAntiPing,
+	AutisticReadInvisible,
+	AutisticGhosts,
+	AutisticShowOrig,
+	AutisticLayoutFix,
+	AutisticHeart,
+	AutisticHideForeign,
+	AutisticAntiAyu,
+	AntiOnlineSpam,
+	AntiSlowmode,
+	SmoothMotionBlur,
+	AntiSpy,
+	AntiSpyOtherApps,
+	AntiSpyApps,
 	Count,
 };
 
@@ -264,6 +289,32 @@ inline constexpr auto WsProxyEnabled = Key<bool>{ OptionId::WsProxyEnabled };
 inline constexpr auto FeedHideArchived
 	= Key<bool>{ OptionId::FeedHideArchived };
 inline constexpr auto LocalPremium = Key<bool>{ OptionId::LocalPremium };
+inline constexpr auto SmoothInterfaceAnimations = Key<bool>{ OptionId::SmoothInterfaceAnimations };
+inline constexpr auto BotMode = Key<bool>{ OptionId::BotMode };
+inline constexpr auto AutoStampAvatar = Key<bool>{ OptionId::AutoStampAvatar };
+inline constexpr auto ExtremeMuteDialog = Key<bool>{ OptionId::ExtremeMuteDialog };
+inline constexpr auto MarkdownPaste = Key<bool>{ OptionId::MarkdownPaste };
+inline constexpr auto MentionAsName = Key<bool>{ OptionId::MentionAsName };
+inline constexpr auto RedesignMode = Key<int>{ OptionId::RedesignMode };
+inline constexpr auto OnlineSpamInterval = Key<int>{ OptionId::OnlineSpamInterval };
+inline constexpr auto AutisticTelegram = Key<bool>{ OptionId::AutisticTelegram };
+inline constexpr auto AutisticCommands = Key<bool>{ OptionId::AutisticCommands };
+inline constexpr auto AutisticIgnore = Key<bool>{ OptionId::AutisticIgnore };
+inline constexpr auto AutisticAntiPing = Key<bool>{ OptionId::AutisticAntiPing };
+inline constexpr auto AutisticReadInvisible = Key<bool>{ OptionId::AutisticReadInvisible };
+inline constexpr auto AutisticGhosts = Key<bool>{ OptionId::AutisticGhosts };
+inline constexpr auto AutisticShowOrig = Key<bool>{ OptionId::AutisticShowOrig };
+inline constexpr auto AutisticLayoutFix = Key<bool>{ OptionId::AutisticLayoutFix };
+inline constexpr auto AutisticHeart = Key<bool>{ OptionId::AutisticHeart };
+inline constexpr auto AutisticHideForeign = Key<int>{ OptionId::AutisticHideForeign };
+inline constexpr auto AutisticAntiAyu = Key<bool>{ OptionId::AutisticAntiAyu };
+inline constexpr auto AntiOnlineSpam = Key<bool>{ OptionId::AntiOnlineSpam };
+inline constexpr auto AntiSlowmode = Key<bool>{ OptionId::AntiSlowmode };
+inline constexpr auto SmoothMotionBlur = Key<bool>{ OptionId::SmoothMotionBlur };
+inline constexpr auto AntiSpy = Key<bool>{ OptionId::AntiSpy };
+inline constexpr auto AntiSpyOtherApps = Key<bool>{ OptionId::AntiSpyOtherApps };
+inline constexpr auto AntiSpyApps = Key<QList<int>>{ OptionId::AntiSpyApps };
+
 } // namespace Option
 
 enum class ExtraContextMenuOption : int {
