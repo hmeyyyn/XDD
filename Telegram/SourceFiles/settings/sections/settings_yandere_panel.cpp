@@ -119,24 +119,23 @@ QString Title(Page page) {
 }
 
 QString ShortTitle(Page page) {
-	// Short one-word sidebar labels (Larp Client style) so nothing is
-	// clipped mid-word; the full name stays in the tooltip / heading.
+	// Plain text sidebar labels, no icons or emoji.
 	switch (page) {
-	case Page::Interface: return u"◐  "_q + tr::lng_settings_interface(tr::now);
-	case Page::Messages: return u"✉  "_q + tr::lng_settings_messages(tr::now);
-	case Page::Ghost: return u"◔  Призрак"_q;
-	case Page::Streamer: return u"●  Стример"_q;
-	case Page::Behavior: return u"⚙  "_q + tr::lng_settings_behavior(tr::now);
-	case Page::Network: return u"⇅  Сеть"_q;
-	case Page::Feed: return u"≡  Лента"_q;
-	case Page::Journal: return u"🗑  Журнал"_q;
-	case Page::Appearance: return u"✦  "_q + tr::lng_settings_enhanced_customization(tr::now);
-	case Page::BotUse: return u"🤖  Боты"_q;
-	case Page::Translation: return u"文  "_q + tr::lng_settings_translation(tr::now);
-	case Page::Calls: return u"☎  Звонки"_q;
-	case Page::Other: return u"···  "_q + tr::lng_settings_other(tr::now);
-	case Page::Favorites: return u"★  "_q + tr::lng_yg_panel_favorites(tr::now);
-	case Page::Extra: return u"✚  Дополнительно"_q;
+	case Page::Interface: return tr::lng_settings_interface(tr::now);
+	case Page::Messages: return tr::lng_settings_messages(tr::now);
+	case Page::Ghost: return u"Призрак"_q;
+	case Page::Streamer: return u"Стример"_q;
+	case Page::Behavior: return tr::lng_settings_behavior(tr::now);
+	case Page::Network: return u"Сеть"_q;
+	case Page::Feed: return u"Лента"_q;
+	case Page::Journal: return u"Журнал"_q;
+	case Page::Appearance: return tr::lng_settings_enhanced_customization(tr::now);
+	case Page::BotUse: return u"Боты"_q;
+	case Page::Translation: return tr::lng_settings_translation(tr::now);
+	case Page::Calls: return u"Звонки"_q;
+	case Page::Other: return tr::lng_settings_other(tr::now);
+	case Page::Favorites: return tr::lng_yg_panel_favorites(tr::now);
+	case Page::Extra: return u"Дополнительно"_q;
 	case Page::Count: break;
 	}
 	return u"YandereGram"_q;
@@ -926,8 +925,8 @@ public:
 		setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
 		setAttribute(Qt::WA_DeleteOnClose);
 		setWindowTitle(u"YandereGram CSGUI"_q);
-		setMinimumSize(760, 460);
-		resize(960, 590);
+		setMinimumSize(900, 560);
+		resize(1024, 640);
 
 		_favorites = Core::App().settings().readPref<QByteArray>(kFavorites).split('\n');
 		_favorites.removeAll(QByteArray());
@@ -1089,7 +1088,7 @@ protected:
 	}
 
 private:
-	static constexpr int kSidebarW = 236;
+	static constexpr int kSidebarW = 250;
 
 	struct TileItem {
 		Page page = Page::Interface;
@@ -1138,8 +1137,14 @@ private:
 		_navContainer = new QWidget(_navScroll);
 		_navScroll->setWidget(_navContainer);
 
+		constexpr Page kNavOrder[] = {
+			Page::Interface, Page::Extra, Page::Messages, Page::Ghost,
+			Page::Streamer, Page::Behavior, Page::Network, Page::Feed,
+			Page::Journal, Page::Appearance, Page::BotUse,
+			Page::Translation, Page::Calls, Page::Other, Page::Favorites,
+		};
 		for (int i = 0; i < int(Page::Count); ++i) {
-			const auto pg = Page(i);
+			const auto pg = kNavOrder[i];
 			const auto name = Title(pg);
 			auto *b = new QPushButton(ShortTitle(pg), _navContainer);
 			b->setObjectName(u"ygNav"_q);
@@ -1242,7 +1247,7 @@ private:
 
 		const int searchLeft = kSidebarW + 14;
 		const int closeX = width() - 40;
-		const int exportW = 92;
+		const int exportW = 124;
 		_closeBtn->setGeometry(closeX, 11, 28, 28);
 		_exportBtn->setGeometry(closeX - exportW - 8, 11, exportW, 28);
 		_search->setGeometry(searchLeft, 11, std::max(140, _exportBtn->x() - searchLeft - 10), 28);
@@ -1252,9 +1257,9 @@ private:
 		if (_profileName) _profileName->setGeometry(60, height() - 58, kSidebarW - 68, 20);
 		if (_profileStatus) _profileStatus->setGeometry(60, height() - 38, kSidebarW - 68, 18);
 		const int navBtnH = 33;
-		_navContainer->setGeometry(0, 0, _navScroll->viewport()->width(), int(_navBtns.size()) * (navBtnH + 3) + 8);
+		_navContainer->setGeometry(0, 0, kSidebarW - 14, int(_navBtns.size()) * (navBtnH + 3) + 8);
 		for (int i = 0; i < int(_navBtns.size()); ++i) {
-			_navBtns[i]->setGeometry(4, 4 + i * (navBtnH + 3), _navContainer->width() - 8, navBtnH);
+			_navBtns[i]->setGeometry(4, 4 + i * (navBtnH + 3), kSidebarW - 22, navBtnH);
 		}
 
 		_heading->setGeometry(kSidebarW + 16, 58, width() - kSidebarW - 32, 26);
@@ -1758,6 +1763,8 @@ private:
 		}
 
 		// --- EXTRA (additional features) ---
+		addEnhancedToggle(Page::Extra, Option::LocalPremium);
+		addEnhancedToggle(Page::Extra, Option::AutoStampAvatar);
 		addEnhancedToggle(Page::Extra, Option::AutisticTelegram);
 		addEnhancedToggle(Page::Extra, Option::AutisticCommands);
 		addEnhancedToggle(Page::Extra, Option::AutisticIgnore);
